@@ -2,7 +2,7 @@ syntax = "proto3";
 package valvedgrpc;
 
 option optimize_for = LITE_RUNTIME;
-option go_package = "github.com/filariow/garden/pkg/valvedprotos";
+option go_package = "github.com/filariow/gardenia/pkg/valvedprotos";
 
 // The Valved service definition.
 service ValvedSvc {

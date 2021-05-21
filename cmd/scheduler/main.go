@@ -3,10 +3,8 @@ package main
 import (
 	"log"
 	"net"
-	"os"
 
-	"github.com/filariow/gardenia/internal/valvedgrpc"
-	"github.com/filariow/gardenia/pkg/valve"
+	"github.com/filariow/gardenia/internal/schedulegrpc"
 	"github.com/filariow/gardenia/pkg/valvedprotos"
 	"google.golang.org/grpc"
 )
@@ -18,18 +16,15 @@ func main() {
 }
 
 func run() error {
-	return runServer()
+	return nil
 }
 
 func runServer() error {
-	p1, p2 := os.Getenv("VPIN_1"), os.Getenv("VPIN_2")
-	d := valve.New(p1, p2)
-
 	s := grpc.NewServer()
-	vs := valvedgrpc.New(d)
-	valvedprotos.RegisterValvedSvcServer(s, vs)
+	ss := schedulegrpc.New()
+	valvedprotos.RegisterScheduleSvcServer(s, ss)
 
-	ls, err := net.Listen("tcp", ":12000")
+	ls, err := net.Listen("tcp", "0.0.0.0:12001")
 	if err != nil {
 		return err
 	}

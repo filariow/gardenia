@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/filariow/garden/pkg/valve"
-	"github.com/filariow/garden/pkg/valvedprotos"
+	"github.com/filariow/gardenia/pkg/valve"
+	"github.com/filariow/gardenia/pkg/valvedprotos"
 )
 
 func New(d valve.Driver) valvedprotos.ValvedSvcServer {

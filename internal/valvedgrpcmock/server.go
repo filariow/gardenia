@@ -3,7 +3,7 @@ package valvedgrpcmock
 import (
 	"context"
 
-	"github.com/filariow/garden/pkg/valvedprotos"
+	"github.com/filariow/gardenia/pkg/valvedprotos"
 )
 
 func New() valvedprotos.ValvedSvcServer {

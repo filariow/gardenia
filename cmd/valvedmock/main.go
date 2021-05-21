@@ -4,8 +4,8 @@ import (
 	"log"
 	"net"
 
-	"github.com/filariow/garden/internal/valvedgrpcmock"
-	"github.com/filariow/garden/pkg/valvedprotos"
+	"github.com/filariow/gardenia/internal/valvedgrpcmock"
+	"github.com/filariow/gardenia/pkg/valvedprotos"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )

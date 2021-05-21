@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/filariow/garden/pkg/valve"
+	"github.com/filariow/gardenia/pkg/valve"
 )
 
 func main() {
