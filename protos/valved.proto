@@ -1,0 +1,36 @@
+syntax = "proto3";
+package valvedgrpc;
+
+option optimize_for = LITE_RUNTIME;
+option go_package = "github.com/filariow/garden/pkg/valvedprotos";
+
+// The Valved service definition.
+service ValvedSvc {
+    // Open the valve
+    rpc Open (OpenValveRequest) returns (OpenValveReply) {}
+    // Close the valve
+    rpc Close (CloseValveRequest) returns (CloseValveReply) {}
+    // Returns the status of the valve
+    rpc Status (StatusValveRequest) returns (StatusValveReply) {}
+}
+
+message OpenValveRequest {}
+message OpenValveReply {
+    string Message = 1;
+}
+
+message CloseValveRequest {}
+message CloseValveReply {
+    string Message = 1;
+}
+
+message StatusValveRequest {}
+message StatusValveReply {
+    ValveStatus Status = 1;
+}
+
+enum ValveStatus {
+    Open  = 0;
+    Close = 1;
+    Invalid = 2;
+}

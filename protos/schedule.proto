@@ -1,0 +1,41 @@
+syntax = "proto3";
+package valvedgrpc;
+
+option optimize_for = LITE_RUNTIME;
+option go_package = "github.com/filariow/garden/pkg/valvedprotos";
+
+service ScheduleSvc {
+    rpc AddSchedule (AddScheduleRequest) returns (AddScheduleReply) {}
+	rpc ListSchedules (ListSchedulesRequest) returns (ListSchedulesReply) {}
+	rpc GetSchedule (GetScheduleRequest) returns (GetScheduleReply) {}
+	rpc DeleteSchedule (DeleteScheduleRequest) returns (DeleteScheduleReply) {}
+}
+
+message AddScheduleRequest {
+	Schedule Schedule = 1;
+}
+message AddScheduleReply {}
+
+message ListSchedulesRequest {}
+message ListSchedulesReply {
+	repeated Schedule Schedules = 1;
+}
+
+message GetScheduleRequest {
+	int64 Id = 1;
+}
+message GetScheduleReply {
+	Schedule Schedule = 1;
+}
+
+message DeleteScheduleRequest {
+	int64 Id = 1;
+}
+message DeleteScheduleReply {}
+
+message Schedule {
+    int64 Id = 1;
+	string CronSchedule = 2;
+    int64 DurationSec = 3;
+}
+
