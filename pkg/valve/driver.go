@@ -12,6 +12,7 @@ import (
 type Driver interface {
 	SwitchOn() error
 	SwitchOff() error
+	Status() ValveStatus
 }
 
 func New(pin1, pin2 string) Driver {
@@ -27,20 +28,32 @@ type driver struct {
 	r1 *gpio.RelayDriver
 	r2 *gpio.RelayDriver
 
-	m sync.Mutex
+	m      sync.Mutex
+	status ValveStatus
 }
+
+type ValveStatus bool
+
+const (
+	ValveOpen  ValveStatus = true
+	ValveClose ValveStatus = false
+)
 
 func (d *driver) SwitchOn() error {
 	log.Println("Switching on...")
-	return d.switchRelay(d.r1)
+	return d.switchRelay(d.r1, ValveOpen)
 }
 
 func (d *driver) SwitchOff() error {
 	log.Println("Switching off...")
-	return d.switchRelay(d.r2)
+	return d.switchRelay(d.r2, ValveClose)
 }
 
-func (d *driver) switchRelay(r *gpio.RelayDriver) error {
+func (d *driver) Status() ValveStatus {
+	return d.status
+}
+
+func (d *driver) switchRelay(r *gpio.RelayDriver, next ValveStatus) error {
 	d.m.Lock()
 	defer d.m.Unlock()
 
@@ -58,6 +71,7 @@ func (d *driver) switchRelay(r *gpio.RelayDriver) error {
 	if err := r.Off(); err != nil {
 		return err
 	}
+	d.status = next
 	return nil
 }
 
