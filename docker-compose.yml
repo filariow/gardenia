@@ -1,0 +1,43 @@
+version: "3.8"
+services:
+  valved:
+    build:
+      context: .
+      dockerfile: deploy/docker/valved/Dockerfile
+    volumes:
+      - /proc/cpuinfo:/proc/cpuinfo:ro
+      - /dev/gpiomem:/dev/gpiomem
+      - /dev/gpiochip0:/dev/gpiochip0
+      - /dev/gpiochip1:/dev/gpiochip1
+    environment:
+      VPIN_1: 7
+      VPIN_2: 8
+    ports:
+      - 12000:12000
+    networks:
+      - valved
+  valvedmock:
+    build:
+      context: .
+      dockerfile: deploy/docker/valvedmock/Dockerfile
+    ports:
+      - 12000:12000
+    networks:
+      - valved
+  envoy:
+    build:
+      context: fe/envoy
+      dockerfile: Dockerfile
+    ports:
+      - 14000:14000
+    networks:
+      - valved
+  fe:
+    build:
+      context: fe/gardenia-web
+      dockerfile: Dockerfile
+    ports:
+      - 8080:80
+networks:
+  valved: {}
+
