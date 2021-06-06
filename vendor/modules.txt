@@ -4,6 +4,7 @@ github.com/gobuffalo/uuid
 github.com/gofrs/uuid
 # github.com/golang/protobuf v1.5.2
 github.com/golang/protobuf/proto
+github.com/golang/protobuf/protoc-gen-go/descriptor
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
@@ -16,8 +17,6 @@ github.com/hashicorp/errwrap
 github.com/hashicorp/go-multierror
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
-# github.com/robfig/cron/v3 v3.0.1
-## explicit
 # github.com/sigurn/crc8 v0.0.0-20160107002456-e55481d6f45c
 github.com/sigurn/crc8
 # github.com/sigurn/utils v0.0.0-20190728110027-e1fefb11a144
@@ -50,7 +49,7 @@ golang.org/x/text/unicode/norm
 # google.golang.org/genproto v0.0.0-20210513213006-bf773b8c8384
 ## explicit
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.37.1
+# google.golang.org/grpc v1.38.0
 ## explicit
 google.golang.org/grpc
 google.golang.org/grpc/attributes
@@ -91,6 +90,8 @@ google.golang.org/grpc/internal/transport/networktype
 google.golang.org/grpc/keepalive
 google.golang.org/grpc/metadata
 google.golang.org/grpc/peer
+google.golang.org/grpc/reflection
+google.golang.org/grpc/reflection/grpc_reflection_v1alpha
 google.golang.org/grpc/resolver
 google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
