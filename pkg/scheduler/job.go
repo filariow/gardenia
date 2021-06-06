@@ -9,7 +9,6 @@ import (
 
 type JobDefinition interface {
 	NextSchedule() time.Time
-	Duration() time.Duration
 	Action() ScheduledAction
 }
 
@@ -32,16 +31,17 @@ func (j *job) run() error {
 		return fmt.Errorf("Job yet run")
 	}
 
+	j.err = make(chan error)
+	c, cancel := context.WithCancel(context.Background())
+	j.cancel = cancel
+
 	go func() {
 		j.isRun = true
-		c, cancel := context.WithCancel(context.Background())
-		j.cancel = cancel
-		j.err = make(chan error)
+		defer close(j.err)
 		a := j.definition().Action()
 		if err := a(c); err != nil {
 			j.err <- err
 		}
-		close(j.err)
 	}()
 
 	return nil

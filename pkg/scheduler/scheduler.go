@@ -38,12 +38,12 @@ type scheduler struct {
 
 func New() Scheduler {
 	s := scheduler{
+		registrations:      make(map[int64]jobRegistration),
 		jobsToSchedule:     make(map[int64]*job),
 		jobsRunning:        make(map[int64]*job),
 		jobsTerminated:     make(map[int64]*job),
 		addedJobToSchedule: make(chan *job),
 		refreshSchedule:    make(chan struct{}),
-		registrations:      make(map[int64]jobRegistration),
 	}
 	return &s
 }
@@ -62,6 +62,7 @@ func (s *scheduler) AddJob(jd JobDefinition) int64 {
 		def: jd,
 	}
 	s.registrations[r.id] = r
+	s.refreshSchedule <- struct{}{}
 	return r.id
 }
 
@@ -109,12 +110,16 @@ func (s *scheduler) runJob(j *job) {
 		delete(s.jobsRunning, j.id)
 		s.jobsTerminated[j.id] = j
 
-		nj := job{
-			id:           atomic.AddInt64(&s.jobIdCounter, 1),
-			registration: j.registration,
-		}
-		s.jobsToSchedule[nj.id] = &nj
+		s.scheduleJob(j.registration)
 	}()
+}
+
+func (s *scheduler) scheduleJob(jr jobRegistration) {
+	nj := job{
+		id:           atomic.AddInt64(&s.jobIdCounter, 1),
+		registration: jr,
+	}
+	s.jobsToSchedule[nj.id] = &nj
 }
 
 func (s *scheduler) terminateJob(j *job) {
@@ -144,6 +149,13 @@ func (s *scheduler) Start() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	s.cancel = cancel
 
+	s.mux.Lock()
+
+	for _, r := range s.registrations {
+		s.scheduleJob(r)
+	}
+	s.mux.Unlock()
+
 	for {
 		jc := s.nextJob(ctx)
 		var j *job
@@ -167,6 +179,7 @@ func (s *scheduler) Stop() error {
 	s.isRunning = false
 
 	s.cancel()
+	s.jobsToSchedule = map[int64]*job{}
 	return nil
 }
 
