@@ -16,7 +16,7 @@ func main() {
 }
 
 func run() error {
-	return nil
+	return runServer()
 }
 
 func runServer() error {

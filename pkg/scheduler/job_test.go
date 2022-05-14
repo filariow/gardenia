@@ -12,7 +12,7 @@ type jdempty struct {
 }
 
 func (jd jdempty) NextSchedule() time.Time {
-	return time.Now().Add(1 * time.Second)
+	return time.Now().Add(2 * time.Second)
 }
 
 func (jd jdempty) Action() ScheduledAction {

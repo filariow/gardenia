@@ -62,7 +62,9 @@ func (s *scheduler) AddJob(jd JobDefinition) int64 {
 		def: jd,
 	}
 	s.registrations[r.id] = r
-	s.refreshSchedule <- struct{}{}
+	if s.isRunning {
+		s.refreshSchedule <- struct{}{}
+	}
 	return r.id
 }
 
@@ -77,7 +79,9 @@ func (s *scheduler) RemoveJob(id int64) {
 			delete(s.jobsToSchedule, k)
 		}
 	}
-	s.refreshSchedule <- struct{}{}
+	if s.isRunning {
+		s.refreshSchedule <- struct{}{}
+	}
 }
 
 func (s *scheduler) TerminateRunningJobs() error {
@@ -92,10 +96,9 @@ func (s *scheduler) TerminateRunningJobs() error {
 
 func (s *scheduler) runJob(j *job) {
 	s.mux.Lock()
-	defer s.mux.Unlock()
-
 	delete(s.jobsToSchedule, j.id)
 	s.jobsRunning[j.id] = j
+	s.mux.Unlock()
 
 	if err := j.run(); err != nil {
 		log.Println(err)
@@ -146,26 +149,40 @@ func (s *scheduler) Start() error {
 		return err
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	s.cancel = cancel
-
+	// register jobs
 	s.mux.Lock()
-
 	for _, r := range s.registrations {
 		s.scheduleJob(r)
 	}
 	s.mux.Unlock()
 
+	ctx, cancel := context.WithCancel(context.Background())
+	s.cancel = cancel
 	for {
+		log.Println("waiting for new job")
 		jc := s.nextJob(ctx)
-		var j *job
 		select {
-		case j = <-jc:
+		case j := <-jc:
+			log.Printf("new job selected %v", j.id)
+			//timer
+			d := j.definition().NextSchedule().Sub(time.Now())
+			timer := time.NewTimer(d)
+			select {
+			case <-timer.C:
+				log.Println("running job")
+				s.runJob(j)
+				log.Println("job runned")
+				log.Println("timer elapsed")
+				continue
+			case <-ctx.Done():
+				log.Println("scheduler stopped")
+				timer.Stop()
+				return nil
+			}
 		case <-ctx.Done():
+			log.Println("scheduler stopped")
 			return nil
 		}
-
-		s.runJob(j)
 	}
 }
 
