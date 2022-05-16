@@ -1,10 +1,12 @@
 # github.com/gobuffalo/uuid v2.0.5+incompatible
-github.com/gobuffalo/uuid
-# github.com/gofrs/uuid v3.2.0+incompatible
+## explicit
+# github.com/gofrs/uuid v4.2.0+incompatible
+## explicit
 github.com/gofrs/uuid
 # github.com/golang/protobuf v1.5.2
+## explicit; go 1.9
+github.com/golang/protobuf/jsonpb
 github.com/golang/protobuf/proto
-github.com/golang/protobuf/protoc-gen-go/descriptor
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
@@ -13,44 +15,48 @@ github.com/golang/protobuf/ptypes/timestamp
 ## explicit
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.1
-## explicit
+## explicit; go 1.13
 github.com/hashicorp/go-multierror
 # github.com/pkg/errors v0.9.1
+## explicit
 github.com/pkg/errors
-# github.com/sigurn/crc8 v0.0.0-20160107002456-e55481d6f45c
+# github.com/sigurn/crc8 v0.0.0-20220107193325-2243fe600f9f
+## explicit; go 1.17
 github.com/sigurn/crc8
 # github.com/sigurn/utils v0.0.0-20190728110027-e1fefb11a144
-github.com/sigurn/utils
-# gobot.io/x/gobot v1.15.0
 ## explicit
+# gobot.io/x/gobot v1.16.0
+## explicit; go 1.13
 gobot.io/x/gobot
+gobot.io/x/gobot/drivers/aio
 gobot.io/x/gobot/drivers/gpio
 gobot.io/x/gobot/drivers/i2c
 gobot.io/x/gobot/drivers/spi
 gobot.io/x/gobot/platforms/raspi
 gobot.io/x/gobot/sysfs
-# golang.org/x/net v0.0.0-20210510120150-4163338589ed
-## explicit
+# golang.org/x/net v0.0.0-20220513224357-95641704303c
+## explicit; go 1.17
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/sys v0.0.0-20210514084401-e8d321eab015
-## explicit
+# golang.org/x/sys v0.0.0-20220513210249-45d2b4557a2a
+## explicit; go 1.17
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
-# golang.org/x/text v0.3.6
+# golang.org/x/text v0.3.7
+## explicit; go 1.17
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# google.golang.org/genproto v0.0.0-20210513213006-bf773b8c8384
-## explicit
+# google.golang.org/genproto v0.0.0-20220505152158-f39f71e6c8f3
+## explicit; go 1.15
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.38.0
-## explicit
+# google.golang.org/grpc v1.46.2
+## explicit; go 1.14
 google.golang.org/grpc
 google.golang.org/grpc/attributes
 google.golang.org/grpc/backoff
@@ -59,14 +65,17 @@ google.golang.org/grpc/balancer/base
 google.golang.org/grpc/balancer/grpclb/state
 google.golang.org/grpc/balancer/roundrobin
 google.golang.org/grpc/binarylog/grpc_binarylog_v1
+google.golang.org/grpc/channelz
 google.golang.org/grpc/codes
 google.golang.org/grpc/connectivity
 google.golang.org/grpc/credentials
+google.golang.org/grpc/credentials/insecure
 google.golang.org/grpc/encoding
 google.golang.org/grpc/encoding/proto
 google.golang.org/grpc/grpclog
 google.golang.org/grpc/internal
 google.golang.org/grpc/internal/backoff
+google.golang.org/grpc/internal/balancer/gracefulswitch
 google.golang.org/grpc/internal/balancerload
 google.golang.org/grpc/internal/binarylog
 google.golang.org/grpc/internal/buffer
@@ -78,6 +87,7 @@ google.golang.org/grpc/internal/grpcrand
 google.golang.org/grpc/internal/grpcsync
 google.golang.org/grpc/internal/grpcutil
 google.golang.org/grpc/internal/metadata
+google.golang.org/grpc/internal/pretty
 google.golang.org/grpc/internal/resolver
 google.golang.org/grpc/internal/resolver/dns
 google.golang.org/grpc/internal/resolver/passthrough
@@ -97,14 +107,16 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-# google.golang.org/protobuf v1.26.0
-## explicit
+# google.golang.org/protobuf v1.28.0
+## explicit; go 1.11
+google.golang.org/protobuf/encoding/protojson
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire
 google.golang.org/protobuf/internal/descfmt
 google.golang.org/protobuf/internal/descopts
 google.golang.org/protobuf/internal/detrand
 google.golang.org/protobuf/internal/encoding/defval
+google.golang.org/protobuf/internal/encoding/json
 google.golang.org/protobuf/internal/encoding/messageset
 google.golang.org/protobuf/internal/encoding/tag
 google.golang.org/protobuf/internal/encoding/text
@@ -129,7 +141,7 @@ google.golang.org/protobuf/types/descriptorpb
 google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb
-# periph.io/x/periph v3.6.7+incompatible
+# periph.io/x/periph v3.6.8+incompatible
 ## explicit
 periph.io/x/periph
 periph.io/x/periph/conn
