@@ -22,17 +22,21 @@ func parseArgs() (func(context.Context, *app) (*string, error), error) {
 		return nil, errors.New("no argument passed")
 	}
 
-	switch os.Args[2] {
+	switch os.Args[1] {
 	case "on":
+		return SwitchOn, nil
 	case "ON":
+		return SwitchOn, nil
 	case "1":
 		return SwitchOn, nil
 	case "off":
+		return SwitchOff, nil
 	case "OFF":
+		return SwitchOff, nil
 	case "0":
 		return SwitchOff, nil
 	}
-	return nil, fmt.Errorf("Invalid argument: %s", os.Args[2])
+	return nil, fmt.Errorf("Invalid argument: %s", os.Args[1])
 }
 
 func SwitchOn(ctx context.Context, a *app) (*string, error) {
@@ -41,7 +45,7 @@ func SwitchOn(ctx context.Context, a *app) (*string, error) {
 }
 
 func SwitchOff(ctx context.Context, a *app) (*string, error) {
-	r, err := a.cli.Open(ctx, &valvedprotos.OpenValveRequest{})
+	r, err := a.cli.Close(ctx, &valvedprotos.CloseValveRequest{})
 	return &r.Message, err
 }
 

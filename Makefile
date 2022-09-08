@@ -4,7 +4,7 @@ GOOS := linux
 
 .PHONY: trybuild build protos
 
-trybuild: **.go
+trybuild:
 	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -o /dev/null cmd/valvectl/main.go
 
 build: **.go

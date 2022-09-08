@@ -11,6 +11,8 @@ import (
 	"google.golang.org/grpc"
 )
 
+const SockAddr = "/tmp/valved.sock"
+
 func main() {
 	if err := run(); err != nil {
 		log.Fatalln(err)
@@ -29,7 +31,11 @@ func runServer() error {
 	vs := valvedgrpc.New(d)
 	valvedprotos.RegisterValvedSvcServer(s, vs)
 
-	ls, err := net.Listen("tcp", ":12000")
+	if err := os.RemoveAll(SockAddr); err != nil {
+		log.Fatal(err)
+	}
+
+	ls, err := net.Listen("unix", SockAddr)
 	if err != nil {
 		return err
 	}

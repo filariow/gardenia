@@ -2,6 +2,7 @@ package valvedgrpcmock
 
 import (
 	"context"
+	"log"
 
 	"github.com/filariow/gardenia/pkg/valvedprotos"
 )
@@ -17,12 +18,14 @@ type valvedGrpcServer struct {
 
 // Open the valve
 func (s *valvedGrpcServer) Open(_ context.Context, _ *valvedprotos.OpenValveRequest) (*valvedprotos.OpenValveReply, error) {
+	log.Printf("Valve open request received")
 	s.status = true
 	return &valvedprotos.OpenValveReply{Message: "Valve Opened"}, nil
 }
 
 // Close the valve
 func (s *valvedGrpcServer) Close(_ context.Context, _ *valvedprotos.CloseValveRequest) (*valvedprotos.CloseValveReply, error) {
+	log.Printf("Valve close request received")
 	s.status = false
 	return &valvedprotos.CloseValveReply{Message: "Valve Closed"}, nil
 }
