@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: skeduler
+  labels:
+    app: skeduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: skeduler
+  template:
+    metadata:
+      labels:
+        app: skeduler
+    spec:
+      containers:
+        - name: skeduler
+          image: rosina/skeduler:latest
+          ports:
+            - containerPort: 12000
+          environment:
+            - name: "ADDRESS"
+              value: ":1200"
+            - name: "APPLICATION"
+              value: "rosina"
+            - name: "VALVED_IMAGE"
+              value: "rosina/valved:latest"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: skeduler
+spec:
+  selector:
+    app: skeduler
+  ports:
+    - protocol: TCP
+      port: 12000
+      targetPort: 12000
+
