@@ -1,5 +1,13 @@
 version: "3.8"
 services:
+  skeduler:
+    build:
+      context: .
+      dockerfile: deploy/docker/skeduler/Dockerfile
+    environment:
+      ADDRESS: "0.0.0.0:12001"
+    networks:
+      - valved
   valved:
     build:
       context: .
@@ -9,9 +17,11 @@ services:
       - /dev/gpiomem:/dev/gpiomem
       - /dev/gpiochip0:/dev/gpiochip0
       - /dev/gpiochip1:/dev/gpiochip1
+      - /var/valved.sock:/var/valved.sock
     environment:
       VPIN_1: 7
       VPIN_2: 8
+      VSOCKET_ADDR: /var/valved.sock
     ports:
       - 12000:12000
     networks:

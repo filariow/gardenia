@@ -131,6 +131,8 @@ func (s *skeduler) ListJobs(ctx context.Context) ([]Job, error) {
 		}
 		mjj[i] = *mj
 	}
+
+	return mjj, nil
 }
 
 func (s *skeduler) mapCronJobToJob(job *batchv1.CronJob) (*Job, error) {

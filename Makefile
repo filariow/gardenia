@@ -26,7 +26,6 @@ protos:
 	protoc \
 		-I protos \
 		--plugin="protoc-gen-ts=./fe/gardenia-web/node_modules/.bin/protoc-gen-ts" \
-		--js_out="import_style=commonjs,binary:./fe/gardenia-web/src/grpc" \
 		--ts_out="service=grpc-web:./fe/gardenia-web/src/grpc" \
 		protos/valved.proto
 
