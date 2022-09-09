@@ -2,6 +2,8 @@ package skeduler
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -10,11 +12,19 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+const EnvJobDuration = "DURATION_IN_SEC"
+
+type Job struct {
+	JobName  string
+	Schedule string
+	Duration uint64
+}
+
 type Skeduler interface {
-	AddJob(context.Context, string) (string, error)
+	AddJob(context.Context, string, uint64) (string, error)
 	RemoveJob(context.Context, string) error
-	GetJob(context.Context, string) (*batchv1.CronJob, error)
-	ListJobs(context.Context) (*batchv1.CronJobList, error)
+	GetJob(context.Context, string) (*Job, error)
+	ListJobs(context.Context) ([]Job, error)
 }
 
 func New(application string) (Skeduler, error) {
@@ -38,7 +48,7 @@ type skeduler struct {
 	clientset   *kubernetes.Clientset
 }
 
-func (s *skeduler) AddJob(ctx context.Context, schedule string) (string, error) {
+func (s *skeduler) AddJob(ctx context.Context, schedule string, durationSec uint64) (string, error) {
 	startingDeadlineSeconds := int64(60)
 	successfulJobsHistoryLimit := int32(10)
 	failedJobsHistoryLimit := int32(10)
@@ -71,6 +81,12 @@ func (s *skeduler) AddJob(ctx context.Context, schedule string) (string, error) 
 								{
 									Name:  s.application,
 									Image: s.application,
+									Env: []corev1.EnvVar{
+										{
+											Name:  EnvJobDuration,
+											Value: strconv.FormatUint(durationSec, 10),
+										},
+									},
 								},
 							},
 						},
@@ -92,10 +108,54 @@ func (s *skeduler) RemoveJob(ctx context.Context, name string) error {
 	return s.clientset.BatchV1().CronJobs(s.application).Delete(ctx, name, metav1.DeleteOptions{})
 }
 
-func (s *skeduler) GetJob(ctx context.Context, name string) (*batchv1.CronJob, error) {
-	return s.clientset.BatchV1().CronJobs(s.application).Get(ctx, name, metav1.GetOptions{})
+func (s *skeduler) GetJob(ctx context.Context, name string) (*Job, error) {
+	j, err := s.clientset.BatchV1().CronJobs(s.application).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return s.mapCronJobToJob(j)
 }
 
-func (s *skeduler) ListJobs(ctx context.Context) (*batchv1.CronJobList, error) {
-	return s.clientset.BatchV1().CronJobs(s.application).List(ctx, metav1.ListOptions{})
+func (s *skeduler) ListJobs(ctx context.Context) ([]Job, error) {
+	jj, err := s.clientset.BatchV1().CronJobs(s.application).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	mjj := make([]Job, len(jj.Items))
+	for i, j := range jj.Items {
+		mj, err := s.mapCronJobToJob(&j)
+		if err != nil {
+			return nil, err
+		}
+		mjj[i] = *mj
+	}
+}
+
+func (s *skeduler) mapCronJobToJob(job *batchv1.CronJob) (*Job, error) {
+	ee := job.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Env
+	v := func() string {
+		for _, e := range ee {
+			if e.Name == EnvJobDuration {
+				return e.Value
+			}
+		}
+		return ""
+	}()
+
+	if v == "" {
+		return nil, fmt.Errorf("job %s: can not find container with Env var with Name %s", job.GetName(), EnvJobDuration)
+	}
+
+	d, err := strconv.ParseUint(v, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("job %s: can not parse duration from container's Env var %s: %w", job.GetName(), EnvJobDuration, err)
+	}
+
+	return &Job{
+		JobName:  job.GetName(),
+		Schedule: job.Spec.Schedule,
+		Duration: d,
+	}, nil
 }
