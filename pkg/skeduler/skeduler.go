@@ -27,7 +27,7 @@ type Skeduler interface {
 	ListJobs(context.Context) ([]Job, error)
 }
 
-func New(application string) (Skeduler, error) {
+func New(application string, valvedImage string) (Skeduler, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -39,12 +39,15 @@ func New(application string) (Skeduler, error) {
 	}
 
 	return &skeduler{
-		clientset: clientset,
+		application: application,
+		clientset:   clientset,
+		valvedImage: valvedImage,
 	}, nil
 }
 
 type skeduler struct {
 	application string
+	valvedImage string
 	clientset   *kubernetes.Clientset
 }
 
@@ -80,7 +83,7 @@ func (s *skeduler) AddJob(ctx context.Context, schedule string, durationSec uint
 							Containers: []corev1.Container{
 								{
 									Name:  s.application,
-									Image: s.application,
+									Image: s.valvedImage,
 									Env: []corev1.EnvVar{
 										{
 											Name:  EnvJobDuration,

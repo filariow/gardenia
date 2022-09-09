@@ -15,6 +15,7 @@ import (
 const (
 	EnvAddress     = "ADDRESS"
 	EnvApplication = "APPLICATION"
+	EnvValvedImage = "VALVED_IMAGE"
 	DefaultAddress = "0.0.0.0:12000"
 )
 
@@ -44,12 +45,17 @@ func runServer() error {
 }
 
 func buildServer() (*grpc.Server, error) {
-	app, err := getApplication()
+	app, err := getRequiredEnvVar(EnvApplication)
 	if err != nil {
 		return nil, err
 	}
 
-	sk, err := skeduler.New(app)
+	vi, err := getRequiredEnvVar(EnvValvedImage)
+	if err != nil {
+		return nil, err
+	}
+
+	sk, err := skeduler.New(app, vi)
 	if err != nil {
 		return nil, err
 	}
@@ -69,10 +75,10 @@ func getAddress() string {
 	return DefaultAddress
 }
 
-func getApplication() (string, error) {
-	if app := os.Getenv(EnvApplication); app != "" {
+func getRequiredEnvVar(env string) (string, error) {
+	if app := os.Getenv(env); app != "" {
 		return app, nil
 	}
 
-	return "", fmt.Errorf("Env var %s must be set", EnvApplication)
+	return "", fmt.Errorf("Env var %s must be set", env)
 }
