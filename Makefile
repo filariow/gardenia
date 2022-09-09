@@ -7,7 +7,7 @@ GOOS := linux
 trybuild:
 	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -o /dev/null cmd/valvectl/main.go
 
-build: **.go
+build:
 	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -trimpath -ldflags="-s -w" -o bin/valvectl cmd/valvectl/main.go
 
 ci: build
