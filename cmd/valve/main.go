@@ -41,12 +41,22 @@ func parseArgs() (func(context.Context, *app) (*string, error), error) {
 
 func SwitchOn(ctx context.Context, a *app) (*string, error) {
 	r, err := a.cli.Open(ctx, &valvedprotos.OpenValveRequest{})
-	return &r.Message, err
+	if err != nil {
+		return nil, err
+	}
+
+	m := r.GetMessage()
+	return &m, nil
 }
 
 func SwitchOff(ctx context.Context, a *app) (*string, error) {
 	r, err := a.cli.Close(ctx, &valvedprotos.CloseValveRequest{})
-	return &r.Message, err
+	if err != nil {
+		return nil, err
+	}
+
+	m := r.GetMessage()
+	return &m, nil
 }
 
 func printErr(err error) {

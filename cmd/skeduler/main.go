@@ -15,7 +15,7 @@ import (
 const (
 	EnvAddress     = "ADDRESS"
 	EnvApplication = "APPLICATION"
-	DefaultAddress = "0.0.0.0:12001"
+	DefaultAddress = "0.0.0.0:12000"
 )
 
 func main() {
