@@ -1,0 +1,43 @@
+syntax = "proto3";
+package valvedgrpc;
+
+option optimize_for = LITE_RUNTIME;
+option go_package = "github.com/filariow/gardenia/pkg/valvedprotos";
+
+service SkeduleSvc {
+    rpc AddSkedule (AddSkeduleRequest) returns (AddSkeduleReply) {}
+	rpc ListSkedules (ListSkedulesRequest) returns (ListSkedulesReply) {}
+	rpc GetSkedule (GetSkeduleRequest) returns (GetSkeduleReply) {}
+	rpc DeleteSkedule (DeleteSkeduleRequest) returns (DeleteSkeduleReply) {}
+}
+
+message AddSkeduleRequest {
+	Skedule Skedule = 1;
+}
+message AddSkeduleReply {
+    string JobName = 1;
+}
+
+message ListSkedulesRequest {}
+message ListSkedulesReply {
+	repeated Skedule Skedules = 1;
+}
+
+message GetSkeduleRequest {
+	string JobName = 1;
+}
+message GetSkeduleReply {
+	Skedule Skedule = 1;
+}
+
+message DeleteSkeduleRequest {
+	string JobName = 1;
+}
+message DeleteSkeduleReply {}
+
+message Skedule {
+    string JobName = 1;
+    string CronSkedule = 2;
+    int64 DurationSec = 3;
+}
+
