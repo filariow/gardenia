@@ -15,7 +15,7 @@ import (
 const (
 	EnvAddress     = "ADDRESS"
 	EnvApplication = "APPLICATION"
-	EnvValvedImage = "VALVED_IMAGE"
+	EnvValvedImage = "RUN_IMAGE"
 	DefaultAddress = "0.0.0.0:12000"
 )
 
