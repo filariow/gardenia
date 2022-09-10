@@ -1,22 +1,23 @@
 FROM gcr.io/distroless/base-debian11 as final
-ENTRYPOINT ["/valved"]
+ENTRYPOINT ["/rosina"]
 
-FROM golang:1.16 as builder
+FROM golang:1.18 as builder
 WORKDIR /app
 COPY "go.mod" "go.mod"
 COPY "go.sum" "go.sum"
 RUN go mod download
 RUN go mod verify
 
-COPY "cmd/valvedmock" "cmd/valvedmock"
+COPY "cmd/rosina" "cmd/rosina"
 COPY "internal" "internal"
 COPY "pkg" "pkg"
 
 RUN go build \
 	-trimpath \
 	-ldflags="-s -w" \
-	-o /tmp/valved \
-	cmd/valvedmock/main.go
+	-o /tmp/rosina \
+	cmd/rosina/main.go
 
 FROM final
-COPY --from=builder /tmp/valved /valved
+COPY --from=builder /tmp/rosina /rosina
+

@@ -71,7 +71,7 @@ func parseDurationInSecFromEnv() (*uint64, error) {
 
 func parseValvedAddressFromEnv() (*string, error) {
 	a := os.Getenv(EnvVarValvedAddress)
-	if a != "" {
+	if a == "" {
 		return nil, fmt.Errorf("%w: %s", ErrMissingEnvVar, EnvVarValvedAddress)
 	}
 
@@ -79,7 +79,7 @@ func parseValvedAddressFromEnv() (*string, error) {
 }
 
 func buildGrpcClient(address string) (valvedprotos.ValvedSvcClient, error) {
-	conn, err := grpc.Dial(address)
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		return nil, err
 	}

@@ -1,8 +1,8 @@
-FROM gcr.io/distroless/static as final
-ENTRYPOINT ["/go/bin/skeduler"]
+FROM gcr.io/distroless/base-debian11 as final
+ENTRYPOINT ["/skeduler"]
 
 FROM golang:1.18 as builder
-WORKDIR /skeduler
+WORKDIR /app
 COPY "go.mod" "go.mod"
 COPY "go.sum" "go.sum"
 RUN go mod download
@@ -19,5 +19,5 @@ RUN go build \
 	cmd/skeduler/main.go
 
 FROM final
-COPY --from=builder /tmp/skeduler /go/bin/skeduler
+COPY --from=builder /tmp/skeduler /skeduler
 

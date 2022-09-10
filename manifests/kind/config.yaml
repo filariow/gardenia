@@ -1,0 +1,9 @@
+apiVersion: kind.x-k8s.io/v1alpha4
+kind: Cluster
+name: rosina-cluster
+nodes:
+- role: control-plane
+  extraMounts:
+    - hostPath: /tmp/valved.sock
+      containerPath: /tmp/valved.sock
+

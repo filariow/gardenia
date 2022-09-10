@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 echo "Building valved"
 go build \
     -trimpath \
@@ -13,6 +15,6 @@ sudo install "bin/valved" "/usr/local/valved"
 echo "Starting valved.service"
 sudo systemctl start "deploy/linux/valved.service"
 
-# echo "Appling manifests"
-# kubectl apply -f "manifests"
+echo "Appling manifests"
+kubectl apply -f "manifests"
 

@@ -13,13 +13,16 @@ import (
 )
 
 const (
-	EnvAddress     = "ADDRESS"
-	EnvApplication = "APPLICATION"
-	EnvValvedImage = "RUN_IMAGE"
+	EnvAddress       = "ADDRESS"
+	EnvApplication   = "APPLICATION"
+	EnvValvedImage   = "RUN_IMAGE"
+	EnvValvedAddress = "VALVED_ADDRESS"
+
 	DefaultAddress = "0.0.0.0:12000"
 )
 
 func main() {
+	log.Println("Starting skeduler")
 	if err := run(); err != nil {
 		log.Fatalln(err)
 	}
@@ -31,6 +34,7 @@ func run() error {
 
 func runServer() error {
 	a := getAddress()
+	log.Printf("Starting server at %s", a)
 	ls, err := net.Listen("tcp", a)
 	if err != nil {
 		return err
@@ -55,7 +59,12 @@ func buildServer() (*grpc.Server, error) {
 		return nil, err
 	}
 
-	sk, err := skeduler.New(app, vi)
+	va, err := getRequiredEnvVar(EnvValvedAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	sk, err := skeduler.New(app, vi, va)
 	if err != nil {
 		return nil, err
 	}

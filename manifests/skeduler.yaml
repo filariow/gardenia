@@ -24,15 +24,18 @@ spec:
       containers:
         - name: skeduler
           image: rosina/skeduler:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 12000
-          environment:
+          env:
             - name: "ADDRESS"
-              value: ":1200"
+              value: ":12000"
             - name: "APPLICATION"
               value: "rosina"
-            - name: "VALVED_IMAGE"
-              value: "rosina/valved:latest"
+            - name: "RUN_IMAGE"
+              value: "rosina/rosina:latest"
+            - name: "VALVED_ADDRESS"
+              value: "/tmp/valved.sock"
 ---
 apiVersion: v1
 kind: Service
@@ -60,7 +63,7 @@ metadata:
   namespace: rosina
   name: skeduler
 rules:
-  - apiGroyps: [""]
+  - apiGroups: ["batch"]
     resources: ["cronjobs"]
     verbs: ["get","watch","list","create","update","delete"]
 ---

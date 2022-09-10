@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 echo "Building valvedmock"
 go build \
     -trimpath \
@@ -15,6 +17,27 @@ sudo install "deploy/linux/valved.service" "/usr/lib/systemd/system/valved.servi
 sudo systemctl daemon-reload
 sudo systemctl enable --now "valved.service"
 
-# echo "Appling manifests"
-# kubectl apply -f "manifests"
+echo "Building 'skeduler' image"
+docker build \
+    -f deploy/docker/skeduler/Dockerfile \
+    -t "rosina/skeduler:latest" \
+    .
+
+echo "Building 'rosina' image"
+docker build \
+    -f deploy/docker/rosina/Dockerfile \
+    -t "rosina/rosina:latest" \
+    .
+
+echo "Ensuring kind cluster 'rosina-cluster' is present"
+kind get clusters | grep '^rosina-cluster$' || kind create cluster --config "manifests/kind/config.yaml"
+
+echo "Loading skeduler image into kind cluster"
+kind load docker-image --name rosina-cluster "rosina/skeduler:latest"
+
+echo "Loading 'rosina' image into kind cluster"
+kind load docker-image --name rosina-cluster "rosina/rosina:latest"
+
+echo "Appling manifests"
+kubectl apply -f "manifests/skeduler.yaml"
 

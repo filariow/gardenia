@@ -12,7 +12,10 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-const EnvJobDuration = "DURATION_IN_SEC"
+const (
+	EnvJobDuration   = "DURATION_IN_SEC"
+	EnvValvedAddress = "VALVED_ADDRESS"
+)
 
 type Job struct {
 	JobName  string
@@ -27,7 +30,7 @@ type Skeduler interface {
 	ListJobs(context.Context) ([]Job, error)
 }
 
-func New(application string, valvedImage string) (Skeduler, error) {
+func New(application string, jobImage string, valvedAddress string) (Skeduler, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -39,16 +42,18 @@ func New(application string, valvedImage string) (Skeduler, error) {
 	}
 
 	return &skeduler{
-		application: application,
-		clientset:   clientset,
-		valvedImage: valvedImage,
+		application:   application,
+		clientset:     clientset,
+		jobImage:      jobImage,
+		valvedAddress: valvedAddress,
 	}, nil
 }
 
 type skeduler struct {
-	application string
-	valvedImage string
-	clientset   *kubernetes.Clientset
+	application   string
+	jobImage      string
+	valvedAddress string
+	clientset     *kubernetes.Clientset
 }
 
 func (s *skeduler) AddJob(ctx context.Context, schedule string, durationSec uint64) (string, error) {
@@ -57,6 +62,7 @@ func (s *skeduler) AddJob(ctx context.Context, schedule string, durationSec uint
 	failedJobsHistoryLimit := int32(10)
 	suspend := false
 	parallelism := int32(1)
+	privileged := true
 
 	j := batchv1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{
@@ -80,14 +86,39 @@ func (s *skeduler) AddJob(ctx context.Context, schedule string, durationSec uint
 							Name: s.application,
 						},
 						Spec: corev1.PodSpec{
+							RestartPolicy: "Never",
 							Containers: []corev1.Container{
 								{
-									Name:  s.application,
-									Image: s.valvedImage,
+									Name:            s.application,
+									Image:           s.jobImage,
+									ImagePullPolicy: corev1.PullIfNotPresent,
+									SecurityContext: &corev1.SecurityContext{
+										Privileged: &privileged,
+									},
 									Env: []corev1.EnvVar{
 										{
 											Name:  EnvJobDuration,
 											Value: strconv.FormatUint(durationSec, 10),
+										},
+										{
+											Name:  EnvValvedAddress,
+											Value: "unix:/var/valved.sock",
+										},
+									},
+									VolumeMounts: []corev1.VolumeMount{
+										{
+											MountPath: "/var/valved.sock",
+											Name:      "valvedsock-privileged",
+										},
+									},
+								},
+							},
+							Volumes: []corev1.Volume{
+								{
+									Name: "valvedsock-privileged",
+									VolumeSource: corev1.VolumeSource{
+										HostPath: &corev1.HostPathVolumeSource{
+											Path: s.valvedAddress,
 										},
 									},
 								},

@@ -67,7 +67,7 @@ to quickly create a Cobra application.`,
 			return err
 		}
 
-		fmt.Println(m)
+		fmt.Println(string(m))
 		return nil
 	},
 }
