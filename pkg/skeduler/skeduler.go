@@ -125,7 +125,7 @@ func (s *skeduler) AddJob(ctx context.Context, schedule string, durationSec uint
 		j.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Env = append(
 			j.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Env,
 			corev1.EnvVar{
-				Name:  EnvUnixSocketAddr,
+				Name:  EnvValvedUnixAddr,
 				Value: "unix:/var/valved.sock",
 			})
 
