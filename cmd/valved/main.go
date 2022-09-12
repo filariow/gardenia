@@ -62,7 +62,7 @@ func getAddress() string {
 }
 
 func getSocketAddr() string {
-	a := os.Getenv(EnvSocketAddr)
+	a := os.Getenv(EnvUnixSocketAddr)
 	if a == "" {
 		log.Printf("using Default Socket Address (%s) because provided one (%s) is empty: '%s'", DefaultUnixSocketAddr, EnvUnixSocketAddr, a)
 		return DefaultUnixSocketAddr

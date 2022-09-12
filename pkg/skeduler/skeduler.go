@@ -13,8 +13,9 @@ import (
 )
 
 const (
-	EnvJobDuration   = "DURATION_IN_SEC"
-	EnvValvedAddress = "VALVED_ADDRESS"
+	EnvJobDuration    = "DURATION_IN_SEC"
+	EnvValvedAddress  = "VALVED_ADDRESS"
+	EnvValvedUnixAddr = "VALVED_ADDRESS_UNIX"
 )
 
 type Job struct {
@@ -30,7 +31,7 @@ type Skeduler interface {
 	ListJobs(context.Context) ([]Job, error)
 }
 
-func New(application string, jobImage string, valvedAddress string) (Skeduler, error) {
+func New(application string, jobImage string, valvedAddress *string, localAddress *string) (Skeduler, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -41,18 +42,24 @@ func New(application string, jobImage string, valvedAddress string) (Skeduler, e
 		return nil, err
 	}
 
+	if valvedAddress == nil && localAddress == nil {
+		return nil, fmt.Errorf("one Environment variable among '%s' and '%s' must be defined", EnvValvedAddress, EnvValvedUnixAddr)
+	}
+
 	return &skeduler{
 		application:   application,
 		clientset:     clientset,
 		jobImage:      jobImage,
 		valvedAddress: valvedAddress,
+		localAddress:  localAddress,
 	}, nil
 }
 
 type skeduler struct {
 	application   string
 	jobImage      string
-	valvedAddress string
+	valvedAddress *string
+	localAddress  *string
 	clientset     *kubernetes.Clientset
 }
 
@@ -102,23 +109,7 @@ func (s *skeduler) AddJob(ctx context.Context, schedule string, durationSec uint
 										},
 										{
 											Name:  EnvValvedAddress,
-											Value: "unix:/var/valved.sock",
-										},
-									},
-									VolumeMounts: []corev1.VolumeMount{
-										{
-											MountPath: "/var/valved.sock",
-											Name:      "valvedsock-privileged",
-										},
-									},
-								},
-							},
-							Volumes: []corev1.Volume{
-								{
-									Name: "valvedsock-privileged",
-									VolumeSource: corev1.VolumeSource{
-										HostPath: &corev1.HostPathVolumeSource{
-											Path: s.valvedAddress,
+											Value: *s.valvedAddress,
 										},
 									},
 								},
@@ -128,6 +119,32 @@ func (s *skeduler) AddJob(ctx context.Context, schedule string, durationSec uint
 				},
 			},
 		},
+	}
+
+	if s.localAddress != nil {
+		j.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Env = append(
+			j.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Env,
+			corev1.EnvVar{
+				Name:  EnvUnixSocketAddr,
+				Value: "unix:/var/valved.sock",
+			})
+
+		j.Spec.JobTemplate.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{
+			{
+				MountPath: "/var/valved.sock",
+				Name:      "valvedsock-privileged",
+			},
+		}
+		j.Spec.JobTemplate.Spec.Template.Spec.Volumes = []corev1.Volume{
+			{
+				Name: "valvedsock-privileged",
+				VolumeSource: corev1.VolumeSource{
+					HostPath: &corev1.HostPathVolumeSource{
+						Path: *s.localAddress,
+					},
+				},
+			},
+		}
 	}
 
 	cj, err := s.clientset.BatchV1().CronJobs(s.application).Create(ctx, &j, metav1.CreateOptions{})
