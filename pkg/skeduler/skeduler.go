@@ -122,6 +122,7 @@ func (s *skeduler) AddJob(ctx context.Context, schedule string, durationSec uint
 	}
 
 	if s.localAddress != nil && *s.localAddress != "" {
+		la := *s.localAddress
 		volumeName := "valvedsock-privileged"
 		j.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Env = append(
 			j.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Env,
@@ -135,7 +136,7 @@ func (s *skeduler) AddJob(ctx context.Context, schedule string, durationSec uint
 				Name: volumeName,
 				VolumeSource: corev1.VolumeSource{
 					HostPath: &corev1.HostPathVolumeSource{
-						Path: *s.localAddress,
+						Path: la,
 					},
 				},
 			},
