@@ -13,7 +13,7 @@ echo "Installing valvedmock into /usr/local/valved"
 sudo install "bin/valvedmock" "/usr/local/valved"
 
 echo "Starting valved.service"
-sudo install "deploy/linux/valved.service" "/usr/lib/systemd/system/valved.service"
+sudo install "deploy/linux/valved-local.service" "/usr/lib/systemd/system/valved.service"
 sudo systemctl daemon-reload
 sudo systemctl enable --now "valved.service"
 

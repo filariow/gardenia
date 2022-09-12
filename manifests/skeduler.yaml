@@ -35,7 +35,7 @@ spec:
             - name: "RUN_IMAGE"
               value: "rosina/rosina:latest"
             - name: "VALVED_ADDRESS"
-              value: "/tmp/valved.sock"
+              value: "192.168.178.197:12001"
 ---
 apiVersion: v1
 kind: Service
