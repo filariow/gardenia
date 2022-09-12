@@ -121,7 +121,8 @@ func (s *skeduler) AddJob(ctx context.Context, schedule string, durationSec uint
 		},
 	}
 
-	if s.localAddress != nil {
+	if s.localAddress != nil && *s.localAddress != "" {
+		volumeName := "valvedsock-privileged"
 		j.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Env = append(
 			j.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Env,
 			corev1.EnvVar{
@@ -129,20 +130,21 @@ func (s *skeduler) AddJob(ctx context.Context, schedule string, durationSec uint
 				Value: "unix:/var/valved.sock",
 			})
 
-		j.Spec.JobTemplate.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{
-			{
-				MountPath: "/var/valved.sock",
-				Name:      "valvedsock-privileged",
-			},
-		}
 		j.Spec.JobTemplate.Spec.Template.Spec.Volumes = []corev1.Volume{
 			{
-				Name: "valvedsock-privileged",
+				Name: volumeName,
 				VolumeSource: corev1.VolumeSource{
 					HostPath: &corev1.HostPathVolumeSource{
 						Path: *s.localAddress,
 					},
 				},
+			},
+		}
+
+		j.Spec.JobTemplate.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{
+			{
+				MountPath: "/var/valved.sock",
+				Name:      volumeName,
 			},
 		}
 	}
