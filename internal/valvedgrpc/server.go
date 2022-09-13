@@ -3,6 +3,7 @@ package valvedgrpc
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/filariow/gardenia/pkg/valve"
 	"github.com/filariow/gardenia/pkg/valvedprotos"
@@ -19,6 +20,7 @@ type valvedGrpcServer struct {
 
 // Open the valve
 func (s *valvedGrpcServer) Open(_ context.Context, _ *valvedprotos.OpenValveRequest) (*valvedprotos.OpenValveReply, error) {
+	log.Printf("Valve open request received")
 	if err := s.d.SwitchOn(); err != nil {
 		return nil, err
 	}
@@ -27,6 +29,7 @@ func (s *valvedGrpcServer) Open(_ context.Context, _ *valvedprotos.OpenValveRequ
 
 // Close the valve
 func (s *valvedGrpcServer) Close(_ context.Context, _ *valvedprotos.CloseValveRequest) (*valvedprotos.CloseValveReply, error) {
+	log.Printf("Valve open request received")
 	if err := s.d.SwitchOff(); err != nil {
 		return nil, err
 	}

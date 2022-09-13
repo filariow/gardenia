@@ -3,12 +3,15 @@ package main
 import (
 	"log"
 	"net"
+	"os"
 
 	"github.com/filariow/gardenia/internal/valvedgrpcmock"
 	"github.com/filariow/gardenia/pkg/valvedprotos"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
+
+const SockAddr = "/tmp/valved.sock"
 
 func main() {
 	if err := run(); err != nil {
@@ -28,10 +31,14 @@ func runServer() error {
 
 	reflection.Register(s)
 
-	ls, err := net.Listen("tcp", ":12000")
+	if err := os.RemoveAll(SockAddr); err != nil {
+		log.Fatal(err)
+	}
+
+	ls, err := net.Listen("unix", SockAddr)
 	if err != nil {
 		return err
 	}
-	log.Println("Binded to port 12000")
+	log.Printf("Server started at %s", ls.Addr().String())
 	return s.Serve(ls)
 }

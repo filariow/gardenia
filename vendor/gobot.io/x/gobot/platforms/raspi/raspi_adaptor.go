@@ -17,7 +17,7 @@ import (
 )
 
 var readFile = func() ([]byte, error) {
-	return ioutil.ReadFile("/usr/local/cpuinfo")
+	return ioutil.ReadFile("/proc/cpuinfo")
 }
 
 // Adaptor is the Gobot Adaptor for the Raspberry Pi

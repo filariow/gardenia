@@ -1,0 +1,14 @@
+[Unit]
+Description = valved service
+
+[Service]
+Type = simple
+Environment = "VSOCKET_ADDR_UNIX=/var/valved.sock"
+ExecStart = /usr/local/valved
+Restart = on-abort
+StartLimitInterval = 60
+StartLimitBurst = 10
+
+[Install]
+WantedBy = multi-user.target
+

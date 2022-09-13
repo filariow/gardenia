@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rosina
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: rosina
+  name: skeduler
+  labels:
+    app: skeduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: skeduler
+  template:
+    metadata:
+      labels:
+        app: skeduler
+    spec:
+      serviceAccountName: skeduler
+      containers:
+        - name: skeduler
+          image: rosina/skeduler:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 12000
+          env:
+            - name: "ADDRESS"
+              value: ":12000"
+            - name: "APPLICATION"
+              value: "rosina"
+            - name: "RUN_IMAGE"
+              value: "rosina/rosina:latest"
+            - name: "VALVED_ADDRESS"
+              value: "192.168.178.197:12001"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: rosina
+  name: skeduler
+spec:
+  selector:
+    app: skeduler
+  ports:
+    - protocol: TCP
+      port: 12000
+      targetPort: 12000
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: rosina
+  name: skeduler
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: rosina
+  name: skeduler
+rules:
+  - apiGroups: ["batch"]
+    resources: ["cronjobs"]
+    verbs: ["get","watch","list","create","update","delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: skeduler-role-binding
+  namespace: rosina
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: skeduler
+subjects:
+  - kind: ServiceAccount
+    name: skeduler
+    namespace: rosina
+

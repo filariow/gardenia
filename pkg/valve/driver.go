@@ -65,8 +65,7 @@ func (d *driver) switchRelay(r *gpio.RelayDriver, next ValveStatus) error {
 		return err
 	}
 
-	// 	time.Sleep(40 * time.Millisecond)
-	time.Sleep(2 * time.Second)
+	time.Sleep(100 * time.Millisecond)
 
 	if err := r.Off(); err != nil {
 		return err

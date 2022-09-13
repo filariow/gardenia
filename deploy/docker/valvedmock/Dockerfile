@@ -1,7 +1,8 @@
-FROM gcr.io/distroless/static as final
+FROM gcr.io/distroless/base-debian11 as final
+ENTRYPOINT ["/valved"]
 
 FROM golang:1.16 as builder
-WORKDIR /valved
+WORKDIR /app
 COPY "go.mod" "go.mod"
 COPY "go.sum" "go.sum"
 RUN go mod download
@@ -17,7 +18,5 @@ RUN go build \
 	-o /tmp/valved \
 	cmd/valvedmock/main.go
 
-FROM golang:1.16
-COPY --from=builder /tmp/valved /go/bin/valved
-ENTRYPOINT ["/go/bin/valved"]
-
+FROM final
+COPY --from=builder /tmp/valved /valved
