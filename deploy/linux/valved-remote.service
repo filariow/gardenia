@@ -4,8 +4,8 @@ Description = valved service
 [Service]
 Type = simple
 Environment = "VSOCKET_ADDR=:12001"
-Environment = "VPIN_1=23"
-Environment = "VPIN_2=24"
+Environment = "VPIN_1=18"
+Environment = "VPIN_2=16"
 ExecStart = /usr/local/valved
 Restart = on-abort
 StartLimitInterval = 60
