@@ -45,6 +45,7 @@ metadata:
 spec:
   selector:
     app: skeduler
+  type: LoadBalancer
   ports:
     - protocol: TCP
       port: 12000
