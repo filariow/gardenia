@@ -16,4 +16,5 @@ echo "Starting valved.service"
 sudo install "deploy/linux/valved-remote.service" "/usr/lib/systemd/system/valved.service"
 sudo systemctl daemon-reload
 sudo systemctl enable --now "valved.service"
+sudo systemctl status "valved.service"
 

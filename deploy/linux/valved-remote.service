@@ -3,7 +3,7 @@ Description = valved service
 
 [Service]
 Type = simple
-Environment = "VSOCKET_ADDR=0.0.0.0:12001"
+Environment = "VSOCKET_ADDR=:12001"
 ExecStart = /usr/local/valved
 Restart = on-abort
 StartLimitInterval = 60
