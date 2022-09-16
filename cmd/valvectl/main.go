@@ -51,7 +51,7 @@ func driver() valve.Driver {
 		return nil
 	}
 
-	d := valve.New(p1, p2)
+	d := valve.New(p1, p2, 300)
 	return d
 }
 

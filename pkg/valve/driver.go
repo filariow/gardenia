@@ -15,18 +15,23 @@ type Driver interface {
 	Status() ValveStatus
 }
 
-func New(pin1, pin2 string) Driver {
+func New(pin1, pin2 string, upDurationMs uint64) Driver {
 	r := raspi.NewAdaptor()
 
 	r1 := gpio.NewRelayDriver(r, pin1)
 	r2 := gpio.NewRelayDriver(r, pin2)
 
-	return &driver{r1: r1, r2: r2}
+	return &driver{
+		r1:         r1,
+		r2:         r2,
+		upDuration: time.Duration(upDurationMs) * time.Millisecond,
+	}
 }
 
 type driver struct {
-	r1 *gpio.RelayDriver
-	r2 *gpio.RelayDriver
+	r1         *gpio.RelayDriver
+	r2         *gpio.RelayDriver
+	upDuration time.Duration
 
 	m      sync.Mutex
 	status ValveStatus
@@ -65,7 +70,7 @@ func (d *driver) switchRelay(r *gpio.RelayDriver, next ValveStatus) error {
 		return err
 	}
 
-	time.Sleep(300 * time.Millisecond)
+	time.Sleep(d.upDuration)
 
 	if err := r.Off(); err != nil {
 		return err
