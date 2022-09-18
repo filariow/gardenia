@@ -33,7 +33,7 @@ spec:
             - name: "APPLICATION"
               value: "rosina"
             - name: "RUN_IMAGE"
-              value: "rosina/rosina:latest"
+              value: "rosina/rosinacli:latest"
             - name: "VALVED_ADDRESS"
               value: "192.168.178.197:12001"
 ---

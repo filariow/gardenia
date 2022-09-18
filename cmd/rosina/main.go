@@ -1,19 +1,18 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
+	"net"
 	"os"
-	"strconv"
-	"time"
 
+	"github.com/filariow/gardenia/internal/rosinagrpc"
 	"github.com/filariow/gardenia/pkg/valvedprotos"
 	"google.golang.org/grpc"
 )
 
 const (
-	EnvVarDurationInSec = "DURATION_IN_SEC"
+	EnvVarAddress       = "ADDRESS"
 	EnvVarValvedAddress = "VALVED_ADDRESS"
 )
 
@@ -30,43 +29,41 @@ func main() {
 }
 
 func run() error {
-	s, err := parseDurationInSecFromEnv()
+	va, err := parseValvedAddressFromEnv()
 	if err != nil {
 		return err
 	}
-	log.Printf("Duration in Seconds: %d", *s)
+	log.Printf("Valved Address: %s", *va)
 
-	a, err := parseValvedAddressFromEnv()
-	if err != nil {
-		return err
-	}
-	log.Printf("Valved Address: %s", *a)
-
-	cli, err := buildGrpcClient(*a)
+	cli, err := buildGrpcClient(*va)
 	if err != nil {
 		return err
 	}
 
-	ctx := context.Background()
-	if err := careGarden(ctx, cli, *s); err != nil {
+	a, err := parseAddressFromEnv()
+	if err != nil {
 		return err
 	}
 
-	return nil
+	s := grpc.NewServer()
+	rs := rosinagrpc.New(cli)
+	valvedprotos.RegisterRosinaSvcServer(s, rs)
+
+	lis, err := net.Listen("tcp", *a)
+	if err != nil {
+		return err
+	}
+
+	return s.Serve(lis)
 }
 
-func parseDurationInSecFromEnv() (*uint64, error) {
-	d := os.Getenv(EnvVarDurationInSec)
-	if d == "" {
-		return nil, fmt.Errorf("%w: %s", ErrMissingEnvVar, EnvVarDurationInSec)
+func parseAddressFromEnv() (*string, error) {
+	a := os.Getenv(EnvVarValvedAddress)
+	if a == "" {
+		return nil, fmt.Errorf("%w: %s", ErrMissingEnvVar, EnvVarAddress)
 	}
 
-	s, err := strconv.ParseUint(d, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %s", ErrInvalidEnvVar, EnvVarDurationInSec)
-	}
-
-	return &s, nil
+	return &a, nil
 }
 
 func parseValvedAddressFromEnv() (*string, error) {
@@ -86,24 +83,4 @@ func buildGrpcClient(address string) (valvedprotos.ValvedSvcClient, error) {
 
 	cli := valvedprotos.NewValvedSvcClient(conn)
 	return cli, nil
-}
-
-func careGarden(ctx context.Context, cli valvedprotos.ValvedSvcClient, duration uint64) error {
-	openReq := valvedprotos.OpenValveRequest{}
-	if _, err := cli.Open(ctx, &openReq); err != nil {
-		return err
-	}
-	log.Println("Giving water to the garden")
-
-	st := time.Duration(duration) * time.Second
-	log.Printf("Waiting for %d seconds: until %s UTC", duration, time.Now().UTC().Add(st))
-	time.Sleep(st)
-
-	closeReq := valvedprotos.CloseValveRequest{}
-	if _, err := cli.Close(ctx, &closeReq); err != nil {
-		panic(err)
-	}
-	log.Println("Stopped water to the garden")
-
-	return nil
 }

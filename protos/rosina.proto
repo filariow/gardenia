@@ -1,0 +1,15 @@
+syntax = "proto3";
+package valvedgrpc;
+
+option optimize_for = LITE_RUNTIME;
+option go_package = "github.com/filariow/gardenia/pkg/valvedprotos";
+
+service RosinaSvc {
+    rpc Open(OpenRequest) returns (OpenReply) {}
+}
+
+message OpenRequest {
+	uint64 Duration = 1;
+}
+message OpenReply {}
+

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -73,7 +74,7 @@ func (s *skeduler) AddJob(ctx context.Context, schedule string, durationSec uint
 
 	j := batchv1.CronJob{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: s.application,
+			Name: s.application + "-" + strconv.FormatInt(time.Now().Unix(), 10),
 		},
 		Spec: batchv1.CronJobSpec{
 			Schedule:                   schedule,
