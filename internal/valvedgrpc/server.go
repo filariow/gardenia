@@ -9,17 +9,20 @@ import (
 	"github.com/filariow/gardenia/pkg/valvedprotos"
 )
 
-func New(d valve.Driver) valvedprotos.ValvedSvcServer {
-	return &valvedGrpcServer{d: d}
+func New(d valve.Driver) *ValvedGrpcServer {
+	return &ValvedGrpcServer{d: d}
 }
 
-type valvedGrpcServer struct {
+type ValvedGrpcServer struct {
 	valvedprotos.UnimplementedValvedSvcServer
 	d valve.Driver
+
+	openEvents  chan struct{}
+	closeEvents chan struct{}
 }
 
 // Open the valve
-func (s *valvedGrpcServer) Open(_ context.Context, _ *valvedprotos.OpenValveRequest) (*valvedprotos.OpenValveReply, error) {
+func (s *ValvedGrpcServer) Open(_ context.Context, _ *valvedprotos.OpenValveRequest) (*valvedprotos.OpenValveReply, error) {
 	log.Printf("Valve open request received")
 	if err := s.d.SwitchOn(); err != nil {
 		return nil, err
@@ -28,7 +31,7 @@ func (s *valvedGrpcServer) Open(_ context.Context, _ *valvedprotos.OpenValveRequ
 }
 
 // Close the valve
-func (s *valvedGrpcServer) Close(_ context.Context, _ *valvedprotos.CloseValveRequest) (*valvedprotos.CloseValveReply, error) {
+func (s *ValvedGrpcServer) Close(_ context.Context, _ *valvedprotos.CloseValveRequest) (*valvedprotos.CloseValveReply, error) {
 	log.Printf("Valve open request received")
 	if err := s.d.SwitchOff(); err != nil {
 		return nil, err
@@ -37,7 +40,7 @@ func (s *valvedGrpcServer) Close(_ context.Context, _ *valvedprotos.CloseValveRe
 }
 
 // Returns the status of the valve
-func (s *valvedGrpcServer) Status(_ context.Context, _ *valvedprotos.StatusValveRequest) (*valvedprotos.StatusValveReply, error) {
+func (s *ValvedGrpcServer) Status(_ context.Context, _ *valvedprotos.StatusValveRequest) (*valvedprotos.StatusValveReply, error) {
 	ns := s.d.Status()
 	f := func() (valvedprotos.ValveStatus, error) {
 		switch ns {
@@ -51,4 +54,12 @@ func (s *valvedGrpcServer) Status(_ context.Context, _ *valvedprotos.StatusValve
 
 	st, err := f()
 	return &valvedprotos.StatusValveReply{Status: st}, err
+}
+
+func (s *ValvedGrpcServer) OpenEvents() <-chan struct{} {
+	return s.openEvents
+}
+
+func (s *ValvedGrpcServer) CloseEvents() <-chan struct{} {
+	return s.closeEvents
 }

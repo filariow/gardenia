@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -11,6 +12,9 @@ import (
 	"github.com/filariow/gardenia/internal/valvedgrpc"
 	"github.com/filariow/gardenia/pkg/valve"
 	"github.com/filariow/gardenia/pkg/valvedprotos"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 )
 
@@ -50,7 +54,36 @@ func runServer() error {
 		return err
 	}
 
+	addMetrics(vs.OpenEvents(), vs.CloseEvents())
 	return s.Serve(ls)
+}
+
+func addMetrics(openEvents <-chan struct{}, closeEvents <-chan struct{}) {
+	vs := promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "valved_status",
+		Help: "The status of the valved service",
+	})
+
+	go func() {
+		for range openEvents {
+			log.Printf("open events received")
+			vs.Set(1)
+		}
+	}()
+
+	go func() {
+		for range closeEvents {
+			log.Printf("close events received")
+			vs.Set(0)
+		}
+	}()
+
+	http.Handle("/metrics", promhttp.Handler())
+	go func() {
+		if err := http.ListenAndServe(":2112", nil); err != nil {
+			log.Printf("error starting metrics server")
+		}
+	}()
 }
 
 func listen() (net.Listener, error) {
