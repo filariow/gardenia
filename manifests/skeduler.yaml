@@ -34,7 +34,7 @@ spec:
               value: "rosina"
             - name: "RUN_IMAGE"
               value: "rosina/rosinacli:latest"
-            - name: "VALVED_ADDRESS"
+            - name: "ROSINA_ADDRESS"
               value: "192.168.178.197:12001"
 ---
 apiVersion: apps/v1

@@ -13,11 +13,10 @@ import (
 )
 
 const (
-	EnvAddress           = "ADDRESS"
-	EnvApplication       = "APPLICATION"
-	EnvValvedImage       = "RUN_IMAGE"
-	EnvValvedAddress     = "VALVED_ADDRESS"
-	EnvValvedUnixAddress = "VALVED_ADDRESS_UNIX"
+	EnvAddress       = "ADDRESS"
+	EnvApplication   = "APPLICATION"
+	EnvValvedImage   = "RUN_IMAGE"
+	EnvRosinaAddress = "ROSINA_ADDRESS"
 
 	DefaultAddress = "0.0.0.0:12000"
 )
@@ -60,10 +59,9 @@ func buildServer() (*grpc.Server, error) {
 		return nil, err
 	}
 
-	va := os.Getenv(EnvValvedAddress)
-	ua := os.Getenv(EnvValvedUnixAddress)
+	va := os.Getenv(EnvRosinaAddress)
 
-	sk, err := skeduler.New(app, vi, &va, &ua)
+	sk, err := skeduler.New(app, vi, &va)
 	if err != nil {
 		return nil, err
 	}
