@@ -22,7 +22,7 @@ var (
 )
 
 func main() {
-	log.Println("Starting rosina")
+	log.Println("Starting rosinacli")
 	if err := run(); err != nil {
 		log.Fatal(err)
 	}

@@ -35,7 +35,7 @@ spec:
             - name: "RUN_IMAGE"
               value: "rosina/rosinacli:latest"
             - name: "ROSINA_ADDRESS"
-              value: "192.168.178.197:12001"
+              value: "192.168.178.197:12000"
 ---
 apiVersion: apps/v1
 kind: Deployment

@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
 	"os"
 
 	"github.com/filariow/gardenia/internal/rosinagrpc"
+	"github.com/filariow/gardenia/pkg/rosina"
 	"github.com/filariow/gardenia/pkg/valvedprotos"
 	"google.golang.org/grpc"
 )
@@ -40,25 +42,28 @@ func run() error {
 		return err
 	}
 
+	s := grpc.NewServer()
+	rs := rosinagrpc.New()
+	defer rs.Close()
+	valvedprotos.RegisterRosinaSvcServer(s, rs)
+
 	a, err := parseAddressFromEnv()
 	if err != nil {
 		return err
 	}
-
-	s := grpc.NewServer()
-	rs := rosinagrpc.New(cli)
-	valvedprotos.RegisterRosinaSvcServer(s, rs)
 
 	lis, err := net.Listen("tcp", *a)
 	if err != nil {
 		return err
 	}
 
+	go rosina.Skedule(context.Background(), cli, rs.Jobs())
+
 	return s.Serve(lis)
 }
 
 func parseAddressFromEnv() (*string, error) {
-	a := os.Getenv(EnvVarValvedAddress)
+	a := os.Getenv(EnvVarAddress)
 	if a == "" {
 		return nil, fmt.Errorf("%w: %s", ErrMissingEnvVar, EnvVarAddress)
 	}
