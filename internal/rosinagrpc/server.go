@@ -23,7 +23,7 @@ type Job struct {
 
 // Open the valve
 func (s *RosinaGrpcServer) Open(ctx context.Context, req *valvedprotos.OpenRequest) (*valvedprotos.OpenReply, error) {
-	log.Printf("Adding job of duration")
+	log.Printf("Adding job of duration %d second", req.Duration)
 	d := time.Second * time.Duration(req.Duration)
 	s.jobs <- Job{Duration: d}
 
