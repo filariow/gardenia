@@ -1,0 +1,30 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  namespace: rosina
+  name: prometheus
+spec:
+  serviceAccountName: prometheus
+  serviceMonitorNamespaceSelector: {}
+  serviceMonitorSelector: {}
+  podMonitorSelector: {}
+  resources:
+    requests:
+      memory: 400Mi
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  namespace: rosina
+  name: metrics
+  labels:
+    name: metrics
+spec:
+  namespaceSelector:
+    matchNames:
+      - rosina
+  selector:
+    matchLabels:
+      app: metrics
+  podMetricsEndpoints:
+  - targetPort: 2112

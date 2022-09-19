@@ -3,10 +3,8 @@ Description = rosina service
 
 [Service]
 Type = simple
-Environment = "VSOCKET_ADDR=:12001"
-Environment = "VPIN_1=18"
-Environment = "VPIN_2=16"
-Environment = "VSWITCH_DURATION = 300"
+Environment = "ADDRESS=:12001"
+Environment = "VALVED_ADDRESS=:12000"
 ExecStart = /usr/local/rosina
 Restart = on-abort
 StartLimitInterval = 60
