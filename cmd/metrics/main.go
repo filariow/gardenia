@@ -45,18 +45,28 @@ func run() error {
 		rep, err := cli.Status(context.TODO(), &valvedprotos.StatusValveRequest{})
 		if err != nil {
 			log.Printf("error retrieving status from valve: %w", err)
+			return promhttp.Handler()
 		}
 
-		if rep != nil {
-			switch rep.GetStatus() {
-			case valvedprotos.ValveStatus_Open:
-				vs.Set(1)
-			case valvedprotos.ValveStatus_Close:
-				vs.Set(0)
-			default:
-				vs.Set(-1)
-			}
+		if rep == nil {
+			log.Printf("No reply received from valved")
+			return promhttp.Handler()
 		}
+
+		s := func() float64 {
+			if rep != nil {
+				switch rep.GetStatus() {
+				case valvedprotos.ValveStatus_Open:
+					return 1
+				case valvedprotos.ValveStatus_Close:
+					return 0
+				}
+			}
+			return -1
+		}()
+
+		vs.Set(s)
+		log.Printf("Set status value to %f", s)
 
 		return promhttp.Handler()
 	}())
