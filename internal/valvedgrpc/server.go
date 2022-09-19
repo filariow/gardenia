@@ -10,7 +10,11 @@ import (
 )
 
 func New(d valve.Driver) *ValvedGrpcServer {
-	return &ValvedGrpcServer{d: d}
+	return &ValvedGrpcServer{
+		d:           d,
+		openEvents:  make(chan struct{}),
+		closeEvents: make(chan struct{}),
+	}
 }
 
 type ValvedGrpcServer struct {
