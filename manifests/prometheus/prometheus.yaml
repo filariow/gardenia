@@ -11,20 +11,33 @@ spec:
   resources:
     requests:
       memory: 400Mi
+  additionalScrapeConfigs:
+    name: additional-scrape-configs
+    key: prometheus-additional.yaml
 ---
-apiVersion: monitoring.coreos.com/v1
-kind: PodMonitor
+# this file was generated with the following command:
+# $ kubectl create secret generic additional-scrape-configs --from-file=prometheus-additional.yaml --dry-run -oyaml > additional-scrape-configs.yaml
+apiVersion: v1
+data:
+  prometheus-additional.yaml: LSBqb2JfbmFtZTogInZhbHZlZCIKICBzdGF0aWNfY29uZmlnczoKICAtIHRhcmdldHM6IFsiMTkyLjE2OC4xNzguMTk3OjIxMTIiXQo=
+kind: Secret
 metadata:
-  namespace: rosina
-  name: metrics
-  labels:
-    name: metrics
-spec:
-  namespaceSelector:
-    matchNames:
-      - rosina
-  selector:
-    matchLabels:
-      app: metrics
-  podMetricsEndpoints:
-  - targetPort: 2112
+  creationTimestamp: null
+  name: additional-scrape-configs
+# ---
+# apiVersion: monitoring.coreos.com/v1
+# kind: PodMonitor
+# metadata:
+#   namespace: rosina
+#   name: metrics
+#   labels:
+#     name: metrics
+# spec:
+#   namespaceSelector:
+#     matchNames:
+#       - rosina
+#   selector:
+#     matchLabels:
+#       app: metrics
+#   podMetricsEndpoints:
+#   - targetPort: 2112

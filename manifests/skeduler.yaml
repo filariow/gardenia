@@ -36,33 +36,33 @@ spec:
               value: "rosina/rosinacli:latest"
             - name: "ROSINA_ADDRESS"
               value: "192.168.178.197:12000"
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  namespace: rosina
-  name: metrics
-  labels:
-    app: metrics
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: metrics
-  template:
-    metadata:
-      labels:
-        app: metrics
-    spec:
-      containers:
-        - name: metrics
-          image: rosina/metrics:latest
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 2112
-          env:
-            - name: "VALVED_ADDRESS"
-              value: "192.168.178.197:12001"
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   namespace: rosina
+#   name: metrics
+#   labels:
+#     app: metrics
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: metrics
+#   template:
+#     metadata:
+#       labels:
+#         app: metrics
+#     spec:
+#       containers:
+#         - name: metrics
+#           image: rosina/metrics:latest
+#           imagePullPolicy: IfNotPresent
+#           ports:
+#             - containerPort: 2112
+#           env:
+#             - name: "VALVED_ADDRESS"
+#               value: "192.168.178.197:12001"
 ---
 apiVersion: v1
 kind: Service

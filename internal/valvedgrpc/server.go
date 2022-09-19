@@ -27,6 +27,7 @@ func (s *ValvedGrpcServer) Open(_ context.Context, _ *valvedprotos.OpenValveRequ
 	if err := s.d.SwitchOn(); err != nil {
 		return nil, err
 	}
+	s.openEvents <- struct{}{}
 	return &valvedprotos.OpenValveReply{Message: "Valve Opened"}, nil
 }
 
@@ -36,6 +37,7 @@ func (s *ValvedGrpcServer) Close(_ context.Context, _ *valvedprotos.CloseValveRe
 	if err := s.d.SwitchOff(); err != nil {
 		return nil, err
 	}
+	s.closeEvents <- struct{}{}
 	return &valvedprotos.CloseValveReply{Message: "Valve Closed"}, nil
 }
 
