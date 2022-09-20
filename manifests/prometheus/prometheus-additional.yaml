@@ -1,3 +1,0 @@
-- job_name: "valved"
-  static_configs:
-  - targets: ["192.168.178.197:2112"]
