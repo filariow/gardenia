@@ -3,8 +3,10 @@ module github.com/filariow/gardenia
 go 1.18
 
 require (
+	github.com/prometheus/client_golang v1.13.0
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.13.0
+	github.com/stianeikeland/go-rpio/v4 v4.6.0
 	gobot.io/x/gobot v1.16.0
 	google.golang.org/grpc v1.46.2
 	google.golang.org/protobuf v1.28.1
@@ -46,7 +48,6 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus/client_golang v1.13.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
