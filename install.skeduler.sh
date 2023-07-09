@@ -28,4 +28,3 @@ sudo k3s ctr images import /tmp/rosinacli-latest.tar
 
 echo "Appling manifests"
 kubectl apply -f "manifests/skeduler.yaml"
-
