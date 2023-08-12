@@ -43,13 +43,12 @@ func addMetrics(address string) {
 		for {
 			select {
 			case <-time.After(1 * time.Minute):
-				r := float64(stats.Swap(0)) * 8
-				rlm := r / 60
+				r := float64(stats.Swap(0)) / 7.5
 
 				flg.Add(r)
-				flmg.Set(rlm)
+				flmg.Set(r)
 
-				log.Printf("%.3f Liters, %.3f Liters/min", r, rlm)
+				log.Printf("%.3f Liters/min", r)
 			}
 		}
 	}()
