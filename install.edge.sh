@@ -34,3 +34,8 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now "rosina.service"
 sudo systemctl status "rosina.service"
 
+echo "Starting flowmeter.service"
+sudo install "deploy/linux/flowmeter-remote.service" "/usr/lib/systemd/system/flowmeter.service"
+sudo systemctl daemon-reload
+sudo systemctl enable --now "flowmeter.service"
+sudo systemctl status "flowmeter.service"

@@ -17,33 +17,46 @@ import (
 	"github.com/stianeikeland/go-rpio/v4"
 )
 
-const EnvPin = "PIN"
+const (
+	EnvAddress = "ADDRESS"
+	EnvPin     = "PIN"
+
+	DefaultAddress = ":2113"
+)
 
 var (
 	stats = atomic.Uint64{}
 
-	fg = promauto.NewGauge(prometheus.GaugeOpts{
+	flg = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "flow",
 		Help: "Liters flowed",
 	})
+
+	flmg = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "flow_last_minute",
+		Help: "Liters flowed in last minute",
+	})
 )
 
-func addMetrics() {
+func addMetrics(address string) {
 	go func() {
 		for {
 			select {
 			case <-time.After(1 * time.Minute):
 				r := float64(stats.Swap(0)) * 8
+				rlm := r / 60
 
-				fg.Add(r)
-				log.Printf("%.3f Liters\n", r)
+				flg.Add(r)
+				flmg.Set(rlm)
+
+				log.Printf("%.3f Liters, %.3f Liters/min", r, rlm)
 			}
 		}
 	}()
 
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
-		if err := http.ListenAndServe(":2113", nil); err != nil {
+		if err := http.ListenAndServe(address, nil); err != nil {
 			log.Printf("error starting metrics server")
 		}
 	}()
@@ -62,6 +75,8 @@ func run() error {
 	if err != nil {
 		return err
 	}
+
+	a := readAddressFromEnvOrDefault()
 
 	// Open and map memory to access gpio, check for errors
 	if err := rpio.Open(); err != nil {
@@ -84,7 +99,7 @@ func run() error {
 	}()
 
 	// run metrics server
-	addMetrics()
+	addMetrics(a)
 
 	// handle interrupt signals
 	c := make(chan os.Signal, 1)
@@ -135,4 +150,13 @@ func readPinFromEnv() (int, error) {
 	}
 
 	return pi, nil
+}
+
+func readAddressFromEnvOrDefault() string {
+	a, ok := os.LookupEnv(EnvAddress)
+	if !ok {
+		return DefaultAddress
+	}
+
+	return a
 }

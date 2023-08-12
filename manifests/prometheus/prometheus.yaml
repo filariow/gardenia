@@ -16,9 +16,16 @@ spec:
     key: prometheus-additional.yaml
 ---
 apiVersion: v1
-data:
-  prometheus-additional.yaml: LSBqb2JfbmFtZTogInZhbHZlZCIKICBzdGF0aWNfY29uZmlnczoKICAtIHRhcmdldHM6IFsiMTkyLjE2OC4xNzguMTk3OjIxMTIiXQo=
+stringData:
+  prometheus-additional.yaml: |
+    - job_name: "flowmeter"
+      static_configs:
+      - targets: ["192.168.178.197:12113"]
+    - job_name: "valved"
+      static_configs:
+      - targets: ["192.168.178.197:2112"]
 kind: Secret
 metadata:
   creationTimestamp: null
   name: additional-scrape-configs
+  namespace: rosina
