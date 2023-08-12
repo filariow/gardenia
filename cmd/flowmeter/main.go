@@ -24,7 +24,7 @@ var (
 
 	fg = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: "flow",
-		Help: "Liters per minute",
+		Help: "Liters flowed",
 	})
 )
 
@@ -33,10 +33,10 @@ func addMetrics() {
 		for {
 			select {
 			case <-time.After(1 * time.Minute):
-				r := float64(stats.Swap(0)) / 7.5
+				r := float64(stats.Swap(0)) * 8
 
-				fg.Set(r)
-				log.Printf("%.3f Liters/min\n", r)
+				fg.Add(r)
+				log.Printf("%.3f Liters\n", r)
 			}
 		}
 	}()
