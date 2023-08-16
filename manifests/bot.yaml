@@ -27,3 +27,7 @@ spec:
             secretKeyRef:
               name: rosinabot-token
               key: token
+        - name: "VALVED_ADDRESS"
+          value: "192.168.178.197:12001"
+        - name: "ROSINA_ADDRESS"
+          value: "192.168.178.197:12000"
