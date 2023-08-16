@@ -8,9 +8,9 @@ COPY "go.sum" "go.sum"
 RUN go mod download
 RUN go mod verify
 
-COPY "cmd/rosinacli" "cmd/rosinacli"
 COPY "internal" "internal"
 COPY "pkg" "pkg"
+COPY "cmd/rosinacli" "cmd/rosinacli"
 
 RUN CGO_ENABLED=0 go build \
 	-trimpath \

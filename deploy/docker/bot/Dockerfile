@@ -8,9 +8,9 @@ COPY "go.sum" "go.sum"
 RUN go mod download
 RUN go mod verify
 
-COPY "cmd/bot" "cmd/bot"
 COPY "internal" "internal"
 COPY "pkg" "pkg"
+COPY "cmd/bot" "cmd/bot"
 
 RUN CGO_ENABLED=0 go build \
 	-trimpath \

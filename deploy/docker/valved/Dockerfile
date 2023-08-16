@@ -8,9 +8,9 @@ COPY "go.sum" "go.sum"
 RUN go mod download
 RUN go mod verify
 
-COPY "cmd/valved" "cmd/valved"
 COPY "internal" "internal"
 COPY "pkg" "pkg"
+COPY "cmd/valved" "cmd/valved"
 
 RUN go build \
 	-trimpath \

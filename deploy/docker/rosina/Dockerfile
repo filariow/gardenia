@@ -8,9 +8,9 @@ COPY "go.sum" "go.sum"
 RUN go mod download
 RUN go mod verify
 
-COPY "cmd/rosina" "cmd/rosina"
 COPY "internal" "internal"
 COPY "pkg" "pkg"
+COPY "cmd/rosina" "cmd/rosina"
 
 RUN go build \
 	-trimpath \
