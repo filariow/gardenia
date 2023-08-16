@@ -8,6 +8,14 @@ spec:
   serviceMonitorNamespaceSelector: {}
   serviceMonitorSelector: {}
   podMonitorSelector: {}
+  ruleSelector:
+    matchLabels:
+      app: "rosina"
+  alerting:
+    alertmanagers:
+    - namespace: rosina
+      name: alertmanager-rosina
+      port: web
   resources:
     requests:
       memory: 400Mi
@@ -37,3 +45,119 @@ metadata:
   creationTimestamp: null
   name: additional-scrape-configs
   namespace: rosina
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Alertmanager
+metadata:
+  name: rosina
+  namespace: rosina
+spec:
+  replicas: 3
+  alertmanagerConfigSelector:
+    matchLabels:
+      alertmanagerConfig: rosina
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: rosina
+  namespace: rosina
+  labels:
+    alertmanagerConfig: rosina
+spec:
+  route:
+    groupBy:
+    - 'alertname'
+    groupWait: 10s
+    groupInterval: 5m
+    repeatInterval: 1h
+    receiver: 'telegram'
+  receivers:
+  - name: 'telegram'
+    telegramConfigs:
+    - apiURL: 'https://api.telegram.org'
+      chatID: -936938990
+      parseMode: HTML
+      message: |
+        {{ define "__rosina_dixit" -}}
+        {{ if gt (len .Alerts.Firing) 0 }}{{ range .Alerts.Firing }}
+          {{$isFlowmeter := 0}}
+          {{range .Labels.SortedPairs }}{{if and (eq .Name "job") (eq .Value "flowmeter") }}{{ $isFlowmeter = 1 }}{{end}}{{end}}
+          {{ if $isFlowmeter }}
+              St'arracquann
+          {{ else }}Labels:
+            {{ range .Labels.SortedPairs }} - {{ .Name }} = {{ .Value }}
+            {{ end }}Annotations:
+            {{ range .Annotations.SortedPairs }} - {{ .Name }} = {{ .Value }}
+            {{ end }}Source: {{ .GeneratorURL }}
+            {{ end }}
+          {{ end }}
+        {{ end}}
+        {{ if gt (len .Alerts.Resolved) 0 }}{{ range .Alerts.Resolved }}
+          {{$isFlowmeter := 0}}
+          {{range .Labels.SortedPairs }}{{if and (eq .Name "job") (eq .Value "flowmeter") }}{{$isFlowmeter = 1}}{{end}}{{end}}
+          {{ if $isFlowmeter }}
+              S'ha stutat
+          {{ else }}Labels:
+            {{ range .Labels.SortedPairs }} - {{ .Name }} = {{ .Value }}
+            {{ end }}Annotations:
+            {{ range .Annotations.SortedPairs }} - {{ .Name }} = {{ .Value }}
+            {{ end }}Source: {{ .GeneratorURL }}
+            {{ end }}
+          {{ end }}
+        {{ end}}
+        {{ end}}
+        {{ template "__rosina_dixit" . }}
+      botToken:
+        key: token
+        name: rosinabot-token
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-rosina
+  namespace: rosina
+spec:
+  type: LoadBalancer
+  ports:
+  - name: web
+    nodePort: 30900
+    port: 9090
+    protocol: TCP
+    targetPort: web
+  selector:
+    app.kubernetes.io/name: prometheus
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager-rosina
+  namespace: rosina
+spec:
+  type: LoadBalancer
+  ports:
+  - name: web
+    nodePort: 30903
+    port: 9093
+    protocol: TCP
+    targetPort: web
+  selector:
+    alertmanager: rosina
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: rosina
+  name: rosina-flow-rules
+  namespace: rosina
+spec:
+  groups:
+  - name: ./rosina.rules
+    rules:
+    - alert: water-flowing
+      expr: "avg(flow_last_minute) > 1"
+      for: "10s"
+      labels:
+        job: flowmeter
+        namespace: rosina
