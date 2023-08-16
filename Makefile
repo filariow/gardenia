@@ -58,3 +58,16 @@ rosina:
 .PHONY: rosina-rsync
 rosina-rsync: rosina
 	rsync ./bin/rosina root@$(TARGET_RPI):/usr/local/bin/rosina
+
+.PHONY: bot-image
+bot-image:
+	docker build --platform linux/arm64 -t rosina/bot:latest -f deploy/docker/bot/Dockerfile .
+
+.PHONY: bot-rsync
+bot-rsync: bot-image
+	rsync ./bin/bot-image.tar root@rpi4:/tmp/bot-latest.tar
+
+.PHONY: bot-deploy
+bot-deploy: bot-rsync
+	ssh root@rpi4 'k3s ctr images import /tmp/bot-latest.tar'
+	kubectl apply -f 'manifests/bot.yaml'
