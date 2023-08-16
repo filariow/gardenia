@@ -5,7 +5,7 @@ Description = rosina service
 Type = simple
 Environment = "ADDRESS=:12000"
 Environment = "VALVED_ADDRESS=:12001"
-ExecStart = /usr/local/rosina
+ExecStart = /usr/local/bin/rosina
 Restart = on-abort
 StartLimitInterval = 60
 StartLimitBurst = 10

@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rosinabot
+  name: rosinabot
+  namespace: rosina
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rosinabot
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: rosinabot
+    spec:
+      containers:
+      - image: rosina/bot:latest
+        name: bot
+        imagePullPolicy: IfNotPresent
+        resources: {}
+        env:
+        - name: TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: rosinabot-token
+              key: token

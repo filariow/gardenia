@@ -31,6 +31,10 @@ protos:
 		--ts_out="service=grpc-web:./fe/gardenia-web/src/grpc" \
 		protos/valved.proto
 
+.PHONY: install-edge
+install-edge:
+	TARGET_RPI=rpi3 GOARM=5 make flowmeter-rsync valved-rsync rosina-rsync
+
 .PHONY: flowmeter
 flowmeter:
 	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -trimpath -ldflags="-s -w" -o bin/flowmeter cmd/flowmeter/main.go
@@ -38,3 +42,19 @@ flowmeter:
 .PHONY: flowmeter-rsync
 flowmeter-rsync: flowmeter
 	rsync ./bin/flowmeter root@$(TARGET_RPI):/usr/local/bin/flowmeter
+
+.PHONY: valved
+valved:
+	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -trimpath -ldflags="-s -w" -o bin/valved cmd/valved/main.go
+
+.PHONY: valved-rsync
+valved-rsync: valved
+	rsync ./bin/valved root@$(TARGET_RPI):/usr/local/bin/valved
+
+.PHONY: rosina
+rosina:
+	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -trimpath -ldflags="-s -w" -o bin/rosina cmd/rosina/main.go
+
+.PHONY: rosina-rsync
+rosina-rsync: rosina
+	rsync ./bin/rosina root@$(TARGET_RPI):/usr/local/bin/rosina

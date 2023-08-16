@@ -4,7 +4,7 @@ Description = valved service
 [Service]
 Type = simple
 Environment = "VSOCKET_ADDR_UNIX=/var/valved.sock"
-ExecStart = /usr/local/valved
+ExecStart = /usr/local/bin/valved
 Restart = on-abort
 StartLimitInterval = 60
 StartLimitBurst = 10

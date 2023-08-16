@@ -90,7 +90,7 @@ func buildGrpcClient(address string) (valvedprotos.RosinaSvcClient, error) {
 func careGarden(ctx context.Context, cli valvedprotos.RosinaSvcClient, duration uint64) error {
 	log.Println("Giving water to the garden")
 	openReq := valvedprotos.OpenRequest{Duration: duration}
-	if _, err := cli.Open(ctx, &openReq); err != nil {
+	if _, err := cli.OpenValve(ctx, &openReq); err != nil {
 		return err
 	}
 	return nil

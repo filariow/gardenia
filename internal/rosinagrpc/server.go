@@ -22,12 +22,18 @@ type Job struct {
 }
 
 // Open the valve
-func (s *RosinaGrpcServer) Open(ctx context.Context, req *valvedprotos.OpenRequest) (*valvedprotos.OpenReply, error) {
+func (s *RosinaGrpcServer) OpenValve(ctx context.Context, req *valvedprotos.OpenRequest) (*valvedprotos.OpenReply, error) {
 	log.Printf("Adding job of duration %d second", req.Duration)
 	d := time.Second * time.Duration(req.Duration)
 	s.jobs <- Job{Duration: d}
 
 	return &valvedprotos.OpenReply{}, nil
+}
+
+// Close the valve
+func (s *RosinaGrpcServer) CloseValve(ctx context.Context, req *valvedprotos.CloseRequest) (*valvedprotos.CloseReply, error) {
+	s.jobs <- Job{Duration: 0}
+	return &valvedprotos.CloseReply{}, nil
 }
 
 func (s *RosinaGrpcServer) Jobs() <-chan Job {

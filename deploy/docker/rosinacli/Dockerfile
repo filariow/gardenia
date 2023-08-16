@@ -1,7 +1,7 @@
 FROM gcr.io/distroless/base-debian11 as final
 ENTRYPOINT ["/rosinacli"]
 
-FROM golang:1.18 as builder
+FROM golang:1.21 as builder
 WORKDIR /app
 COPY "go.mod" "go.mod"
 COPY "go.sum" "go.sum"
@@ -12,7 +12,7 @@ COPY "cmd/rosinacli" "cmd/rosinacli"
 COPY "internal" "internal"
 COPY "pkg" "pkg"
 
-RUN go build \
+RUN CGO_ENABLED=0 go build \
 	-trimpath \
 	-ldflags="-s -w" \
 	-o /tmp/rosinacli \

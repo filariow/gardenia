@@ -10,6 +10,7 @@ require (
 	gobot.io/x/gobot v1.16.0
 	google.golang.org/grpc v1.46.2
 	google.golang.org/protobuf v1.28.1
+	gopkg.in/telebot.v3 v3.1.3
 	k8s.io/api v0.25.0
 	k8s.io/apimachinery v0.25.0
 	k8s.io/client-go v0.25.0

@@ -43,7 +43,7 @@ func addMetrics(address string) {
 		for {
 			select {
 			case <-time.After(1 * time.Minute):
-				r := float64(stats.Swap(0)) / 7.5
+				r := float64(stats.Swap(0)) / 30
 
 				flg.Add(r)
 				flmg.Set(r)
