@@ -38,17 +38,19 @@ var (
 	})
 )
 
-func addMetrics(address string) {
+func addMetrics(interval time.Duration, address string) {
+	c := float64(time.Minute) / float64(interval)
+
 	go func() {
 		for {
 			select {
-			case <-time.After(15 * time.Second):
-				r := float64(stats.Swap(0)) / 7.5
+			case <-time.After(interval):
+				l := float64(stats.Swap(0)) * 0.035
+				flg.Add(l)
 
-				flg.Add(r)
-				flmg.Set(r)
-
-				log.Printf("%.3f Liters/min", r)
+				lm := l * c
+				flmg.Set(lm)
+				log.Printf("%.3f Liters/min, %.3F Liters", lm, l)
 			}
 		}
 	}()
@@ -98,7 +100,7 @@ func run() error {
 	}()
 
 	// run metrics server
-	addMetrics(a)
+	addMetrics(15*time.Second, a)
 
 	// handle interrupt signals
 	c := make(chan os.Signal, 1)

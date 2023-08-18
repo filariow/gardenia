@@ -5,16 +5,16 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"image"
+	"image/png"
 	"log"
 	"os"
-	"strconv"
 	"time"
 
 	"gonum.org/v1/plot"
-	"gonum.org/v1/plot/plotutil"
-	"gonum.org/v1/plot/vg"
+	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg/draw"
-	"gonum.org/v1/plot/vg/vgsvg"
+	"gonum.org/v1/plot/vg/vgimg"
 
 	"github.com/filariow/gardenia/pkg/valvedprotos"
 	promapi "github.com/prometheus/client_golang/api"
@@ -23,6 +23,8 @@ import (
 	"google.golang.org/grpc"
 	tele "gopkg.in/telebot.v3"
 )
+
+const dpi = 96
 
 func main() {
 	pref := tele.Settings{
@@ -93,20 +95,18 @@ func main() {
 			return c.Send("Hey @filariow, please specify an amount of seconds for the valve to stay open")
 		}
 
-		t, err := strconv.ParseUint(c.Args()[0], 10, 64)
+		t, err := time.ParseDuration(c.Args()[0])
 		if err != nil {
-			return c.Send(fmt.Printf("Hey @filariow, you provided an invalid amount of time: %v", err))
-		}
-		if t <= 0 {
-			return c.Send(fmt.Printf("Hey @filariow, you provided an invalid amount of time, it needs to be greater than 0"))
+			return c.Send(fmt.Sprintf("Hey @filariow, sorry I did not understood how much time you want to give water (%s): %v", c.Args()[0], err))
 		}
 
-		if _, err := rcli.OpenValve(context.TODO(), &valvedprotos.OpenRequest{Duration: t}); err != nil {
+		d := uint64(t.Seconds())
+		if _, err := rcli.OpenValve(context.TODO(), &valvedprotos.OpenRequest{Duration: d}); err != nil {
 			return c.Send(fmt.Sprintf("Something wrong happend while opening the valve: %s", err))
 		}
 
 		go func() {
-			time.Sleep(time.Duration(t+1) * time.Second)
+			time.Sleep(t)
 
 			isClosed := false
 			for i := 0; i < 5; i++ {
@@ -131,7 +131,7 @@ func main() {
 		}()
 
 		for i := 0; i < 5; i++ {
-			if err := c.Send(fmt.Sprintf("Hi @filariow, I opened the valve for you. It will close in %d seconds. I'll let you know", t)); err != nil {
+			if err := c.Send(fmt.Sprintf("Hi @filariow, I opened the valve for you. It will close in %d seconds. I'll let you know", d)); err != nil {
 				log.Printf("error sending reply: %v", err)
 			} else {
 				break
@@ -220,38 +220,55 @@ func main() {
 
 		m := v.(promcommon.Matrix)
 		var b bytes.Buffer
-		foo := bufio.NewWriter(&b)
-		d := plotData(m)
-		cv := vgsvg.New(3*vg.Inch, 3*vg.Inch)
-		d.Draw(draw.New(cv))
-		if _, err := cv.WriteTo(foo); err != nil {
-			return c.Send(fmt.Sprintf("error drawing the plot"))
+		bw := bufio.NewWriter(&b)
+		d, err := plotData(m)
+		if err != nil {
+			return c.Send(fmt.Sprintf("error plotting the data: %v", err))
 		}
-		foo.Flush()
+
+		img := image.NewRGBA(image.Rect(0, 0, 10*dpi, 10*dpi))
+		cv := vgimg.NewWith(vgimg.UseImage(img))
+		d.Draw(draw.New(cv))
+		if err := png.Encode(bw, img); err != nil {
+			return c.Send(fmt.Sprintf("error encoding the plot as png: %v", err))
+		}
+		bw.Flush()
+
+		fmt.Printf("%s", b.Bytes())
 
 		br := bytes.NewReader(b.Bytes())
 		p := &tele.Photo{File: tele.FromReader(br)}
-		return c.SendAlbum(tele.Album{p})
+		return c.Send(p)
 	})
 
 	log.Printf("bot started")
 	b.Start()
 }
 
-func plotData(m promcommon.Matrix) *plot.Plot {
+func plotData(m promcommon.Matrix) (*plot.Plot, error) {
 	p := plot.New()
 
 	p.Title.Text = "Flow per minute"
 	p.X.Label.Text = "Time"
 	p.Y.Label.Text = "Liters/min"
 
-	for _, e := range m {
-		for _, a := range e.Values {
-			plotutil.AddLinePoints(p, a.Timestamp.Time().Format(time.RFC1123), a.Value)
+	xys := plotter.XYs{}
+	v := m[0].Values[0]
+	for _, a := range m[0].Values {
+		xy := plotter.XY{
+			X: float64(a.Timestamp.Unix() - v.Timestamp.Unix()),
+			Y: float64(a.Value),
 		}
+		xys = append(xys, xy)
 	}
+	xys = plotter.XYs{{X: 0, Y: 0}, {X: 15, Y: 0}, {X: 30, Y: 0}, {X: 45, Y: 0}}
+	l, err := plotter.NewLine(xys)
+	if err != nil {
+		return nil, err
+	}
+	p.Add(l)
 
-	return p
+	return p, nil
 }
 
 func buildValvedGrpcClient(address string) (valvedprotos.ValvedSvcClient, error) {

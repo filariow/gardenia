@@ -37,11 +37,15 @@ install-edge:
 
 .PHONY: flowmeter
 flowmeter:
-	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -trimpath -ldflags="-s -w" -o bin/flowmeter cmd/flowmeter/main.go
+	GOARM=5 GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -trimpath -ldflags="-s -w" -o bin/flowmeter cmd/flowmeter/main.go
 
 .PHONY: flowmeter-rsync
 flowmeter-rsync: flowmeter
-	rsync ./bin/flowmeter root@$(TARGET_RPI):/usr/local/bin/flowmeter
+	rsync ./bin/flowmeter root@rpi3:/usr/local/bin/flowmeter
+
+.PHONY: flowmeter-install
+flowmeter-install: flowmeter-rsync
+	ssh root@rpi3 systemctl restart flowmeter
 
 .PHONY: valved
 valved:
@@ -65,9 +69,10 @@ bot-image:
 
 .PHONY: bot-rsync
 bot-rsync: bot-image
+	docker save rosina/bot:latest -o ./bin/bot-image.tar
 	rsync ./bin/bot-image.tar root@rpi4:/tmp/bot-latest.tar
 
 .PHONY: bot-deploy
 bot-deploy: bot-rsync
-	ssh root@rpi4 'k3s ctr images import /tmp/bot-latest.tar'
+	ssh root@rpi4 '/usr/local/bin/k3s ctr images import /tmp/bot-latest.tar'
 	kubectl apply -f 'manifests/bot.yaml'
