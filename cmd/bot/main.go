@@ -236,12 +236,13 @@ func main() {
 		img := image.NewRGBA(image.Rect(0, 0, 10*dpi, 10*dpi))
 		cv := vgimg.NewWith(vgimg.UseImage(img))
 		d.Draw(draw.New(cv))
-		if err := png.Encode(bw, img); err != nil {
+		if err := png.Encode(bw, cv.Image()); err != nil {
 			return c.Send(fmt.Sprintf("error encoding the plot as png: %v", err))
 		}
-		bw.Flush()
 
-		fmt.Printf("%s", b.Bytes())
+		if err := bw.Flush(); err != nil {
+			return c.Send(fmt.Sprintf("error flushing the plot as png: %v", err))
+		}
 
 		br := bytes.NewReader(b.Bytes())
 		p := &tele.Photo{File: tele.FromReader(br)}
@@ -323,7 +324,9 @@ func main() {
 		}
 
 		r := &tele.ReplyMarkup{
-			ReplyKeyboard: [][]tele.ReplyButton{{}},
+			ReplyKeyboard:   [][]tele.ReplyButton{{}},
+			OneTimeKeyboard: true,
+			Placeholder:     "/delete ",
 		}
 		var sb strings.Builder
 		for _, s := range ss.Skedules {
@@ -348,15 +351,18 @@ func plotData(m promcommon.Matrix) (*plot.Plot, error) {
 	p.Y.Label.Text = "Liters/min"
 
 	xys := plotter.XYs{}
+	if len(m) == 0 {
+		return p, nil
+	}
+
 	v := m[0].Values[0]
 	for _, a := range m[0].Values {
-		xy := plotter.XY{
+		xys = append(xys, plotter.XY{
 			X: float64(a.Timestamp.Unix() - v.Timestamp.Unix()),
 			Y: float64(a.Value),
-		}
-		xys = append(xys, xy)
+		})
 	}
-	xys = plotter.XYs{{X: 0, Y: 0}, {X: 15, Y: 0}, {X: 30, Y: 0}, {X: 45, Y: 0}}
+
 	l, err := plotter.NewLine(xys)
 	if err != nil {
 		return nil, err

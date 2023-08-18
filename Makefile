@@ -6,6 +6,9 @@ TARGET_RPI ?= rpi4
 
 .PHONY: trybuild build protos
 
+vet:
+	$(GO) vet ./...
+
 trybuild:
 	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -o /dev/null cmd/valvectl/main.go
 
@@ -76,3 +79,4 @@ bot-rsync: bot-image
 bot-deploy: bot-rsync
 	ssh root@rpi4 '/usr/local/bin/k3s ctr images import /tmp/bot-latest.tar'
 	kubectl apply -f 'manifests/bot.yaml'
+	kubectl delete pods -l app=rosinabot
