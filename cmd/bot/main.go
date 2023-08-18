@@ -9,6 +9,7 @@ import (
 	"image/png"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"gonum.org/v1/plot"
@@ -41,6 +42,12 @@ func main() {
 	pa, ok := os.LookupEnv("PROMETHEUS_ADDRESS")
 	if !ok || pa == "" {
 		fmt.Printf("PROMETHEUS_ADDRESS env variable is not required but it is not defined or empty")
+		os.Exit(1)
+	}
+
+	sa, ok := os.LookupEnv("SKEDULER_ADDRESS")
+	if !ok || pa == "" {
+		fmt.Printf("SCHEDULER_ADDRESS env variable is not required but it is not defined or empty")
 		os.Exit(1)
 	}
 
@@ -241,6 +248,94 @@ func main() {
 		return c.Send(p)
 	})
 
+	cli, err := buildSkedulerGrpcClient(sa)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	b.Handle("/list", func(c tele.Context) error {
+		if c.Sender().ID != 396136575 {
+			return c.Send("Sorry, only @filariow is authorized")
+		}
+
+		ss, err := cli.ListSkedules(context.TODO(), &valvedprotos.ListSkedulesRequest{})
+		if err != nil {
+			return c.Send(fmt.Sprintf("error retrieving the schedules: %v", err))
+		}
+
+		var sb strings.Builder
+		for _, s := range ss.Skedules {
+			sb.WriteString(s.JobName)
+			sb.WriteString(": ")
+			sb.WriteString(s.CronSkedule)
+			sb.WriteString(" - ")
+			sb.WriteString((time.Duration(s.DurationSec) * time.Second).String())
+			sb.WriteRune('\n')
+		}
+		return c.Send(sb.String())
+	})
+
+	b.Handle("/add", func(c tele.Context) error {
+		if c.Sender().ID != 396136575 {
+			return c.Send("Sorry, only @filariow is authorized")
+		}
+
+		if len(c.Args()) != 6 {
+			return c.Send("six args expected")
+		}
+
+		aa := c.Args()
+		ce := fmt.Sprintf("%s %s %s %s %s", aa[0], aa[1], aa[2], aa[3], aa[4])
+		j := aa[5]
+
+		t, err := time.ParseDuration(j)
+		if err != nil || t < 0 {
+			return c.Send(fmt.Sprintf("Invalid duration '%s': %v", j, err))
+		}
+
+		s := valvedprotos.Skedule{
+			CronSkedule: ce,
+			DurationSec: int64(t.Seconds()),
+		}
+		ns, err := cli.AddSkedule(context.TODO(), &valvedprotos.AddSkeduleRequest{Skedule: &s})
+		if err != nil {
+			return c.Send(fmt.Sprintf("error adding job '%s - %ds': %v", ce, t, err))
+		}
+		return c.Send(fmt.Sprintf("job %s added", ns.GetJobName()))
+	})
+
+	b.Handle("/delete", func(c tele.Context) error {
+		if c.Sender().ID != 396136575 {
+			return c.Send("Sorry, only @filariow is authorized")
+		}
+
+		if len(c.Args()) > 0 {
+			j := c.Args()[0]
+			if _, err := cli.DeleteSkedule(context.TODO(), &valvedprotos.DeleteSkeduleRequest{JobName: j}); err != nil {
+				return c.Send(fmt.Sprintf("error deleting %s: %v", j, err))
+			}
+			return c.Send(fmt.Sprintf("job %s deleted", j))
+		}
+
+		ss, err := cli.ListSkedules(context.TODO(), &valvedprotos.ListSkedulesRequest{})
+		if err != nil {
+			return c.Send(fmt.Sprintf("error retrieving the schedules: %v", err))
+		}
+
+		r := &tele.ReplyMarkup{
+			ReplyKeyboard: [][]tele.ReplyButton{{}},
+		}
+		var sb strings.Builder
+		for _, s := range ss.Skedules {
+			sb.WriteString(fmt.Sprintf("%s: %s - %s\n", s.GetJobName(), s.CronSkedule, (time.Duration(s.DurationSec) * time.Second).String()))
+			t := fmt.Sprintf("/delete %s", s.GetJobName())
+			b := tele.ReplyButton{Text: t}
+			r.ReplyKeyboard = append(r.ReplyKeyboard, []tele.ReplyButton{b})
+		}
+
+		return c.Send(fmt.Sprintf("choose the one to delete:\n%s", sb.String()), r)
+	})
+
 	log.Printf("bot started")
 	b.Start()
 }
@@ -269,6 +364,16 @@ func plotData(m promcommon.Matrix) (*plot.Plot, error) {
 	p.Add(l)
 
 	return p, nil
+}
+
+func buildSkedulerGrpcClient(address string) (valvedprotos.SkeduleSvcClient, error) {
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
+
+	cli := valvedprotos.NewSkeduleSvcClient(conn)
+	return cli, nil
 }
 
 func buildValvedGrpcClient(address string) (valvedprotos.ValvedSvcClient, error) {

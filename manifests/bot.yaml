@@ -27,6 +27,8 @@ spec:
             secretKeyRef:
               name: rosinabot-token
               key: token
+        - name: "SKEDULER_ADDRESS"
+          value: "skeduler.rosina.svc.cluster.local:12000"
         - name: "PROMETHEUS_ADDRESS"
           value: "http://prometheus-operated.rosina.svc.cluster.local:9090"
         - name: "VALVED_ADDRESS"
