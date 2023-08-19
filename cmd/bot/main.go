@@ -8,6 +8,7 @@ import (
 	"image"
 	"image/png"
 	"log"
+	"math"
 	"os"
 	"strings"
 	"time"
@@ -201,20 +202,26 @@ func main() {
 			return c.Send(fmt.Sprintf("Error creating the prometheus client: %v", err))
 		}
 
-		s, err := time.ParseDuration(c.Args()[0])
+		s, err := time.ParseDuration(c.Args()[1])
 		if err != nil {
 			return c.Send(fmt.Sprintf("error parsing start time: %v", err))
 		}
-		e, err := time.ParseDuration(c.Args()[1])
+		e, err := time.ParseDuration(c.Args()[0])
 		if err != nil {
 			return c.Send(fmt.Sprintf("error parsing end time: %v", err))
 		}
 
 		a := prometheusv1.NewAPI(pc)
+		st, et := time.Now().UTC().Add(-s), time.Now().UTC().Add(-e)
+		scale := int(math.Ceil(float64(et.Second()-st.Second()) / 15))
+		if scale == 0 {
+			scale = 1
+		}
+		step := time.Duration(15*scale) * time.Second
 		r := prometheusv1.Range{
-			Start: time.Now().UTC().Add(-s),
-			End:   time.Now().UTC().Add(-e),
-			Step:  15 * time.Second,
+			Start: st,
+			End:   et,
+			Step:  step,
 		}
 
 		v, ww, err := a.QueryRange(context.TODO(), "flow_last_minute", r)
