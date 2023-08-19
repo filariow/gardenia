@@ -92,7 +92,7 @@ func run() error {
 	// configure input pin
 	pin := rpio.Pin(p)
 	pin.Input()
-	pin.PullUp()
+	pin.PullDown()
 	pin.Detect(rpio.FallEdge) // enable falling edge event detection
 	defer func() {
 		pin.Detect(rpio.NoEdge) // disable edge event detection
@@ -130,7 +130,7 @@ func runCollector(ctx context.Context, pin rpio.Pin) {
 			if pin.EdgeDetected() {
 				stats.Add(1)
 			}
-			time.Sleep(100 * time.Millisecond)
+			time.Sleep(10 * time.Millisecond)
 		}
 	}
 }
