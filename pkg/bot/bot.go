@@ -1,6 +1,9 @@
 package bot
 
 import (
+	"log"
+	"math/rand"
+
 	"github.com/filariow/gardenia/pkg/valvedprotos"
 	tele "gopkg.in/telebot.v3"
 	"gopkg.in/telebot.v3/middleware"
@@ -59,7 +62,34 @@ func New(cfg Config) (RosinaBot, error) {
 	}
 
 	adminOnly := b.Group()
+	fm := func(chats ...int64) tele.MiddlewareFunc {
+		return func(next tele.HandlerFunc) tele.HandlerFunc {
+			return func(c tele.Context) error {
+				replies := []string{
+					"a chi si figl?",
+					"a chi appartien?",
+					"chi si tu?",
+					"a mammet!",
+				}
+
+				for _, chat := range chats {
+					if chat != c.Sender().ID {
+						i := rand.Intn(len(replies) - 1)
+						err := c.Reply(replies[i])
+						if err != nil {
+							log.Printf("error replying: %s", err)
+						}
+						return err
+					}
+				}
+
+				return nil
+			}
+		}
+	}
+	adminOnly.Use(fm(cfg.AllowedIDs...))
 	adminOnly.Use(middleware.Whitelist(cfg.AllowedIDs...))
+
 	adminOnly.Handle("/open", r.openValve)
 	adminOnly.Handle("/close", r.closeValve)
 	adminOnly.Handle("/status", r.statusValve)

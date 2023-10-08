@@ -79,4 +79,4 @@ bot-rsync: bot-image
 bot-deploy: bot-rsync
 	ssh root@rpi4 '/usr/local/bin/k3s ctr images import /tmp/bot-latest.tar'
 	kubectl apply -f 'manifests/bot.yaml'
-	kubectl delete pods -l app=rosinabot
+	kubectl delete pods -l app=rosinabot -n rosina
