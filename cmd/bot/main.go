@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -11,27 +10,28 @@ import (
 )
 
 func main() {
+	log.Println("starting bot")
 	pa, ok := os.LookupEnv("PROMETHEUS_ADDRESS")
 	if !ok || pa == "" {
-		fmt.Printf("PROMETHEUS_ADDRESS env variable is not required but it is not defined or empty")
+		log.Println("PROMETHEUS_ADDRESS env variable is not required but it is not defined or empty")
 		os.Exit(1)
 	}
 
 	sa, ok := os.LookupEnv("SKEDULER_ADDRESS")
 	if !ok || pa == "" {
-		fmt.Printf("SCHEDULER_ADDRESS env variable is not required but it is not defined or empty")
+		log.Println("SCHEDULER_ADDRESS env variable is not required but it is not defined or empty")
 		os.Exit(1)
 	}
 
 	ra, ok := os.LookupEnv("ROSINA_ADDRESS")
 	if !ok || ra == "" {
-		fmt.Printf("ROSINA_ADDRESS env variable is not required but it is not defined or empty")
+		log.Println("ROSINA_ADDRESS env variable is not required but it is not defined or empty")
 		os.Exit(1)
 	}
 
 	va, ok := os.LookupEnv("VALVED_ADDRESS")
 	if !ok || va == "" {
-		fmt.Printf("VALVED_ADDRESS env variable is not required but it is not defined or empty")
+		log.Println("VALVED_ADDRESS env variable is not required but it is not defined or empty")
 		os.Exit(1)
 	}
 

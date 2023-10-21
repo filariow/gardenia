@@ -72,23 +72,29 @@ func New(cfg Config) (RosinaBot, error) {
 					"a mammet!",
 				}
 
+				allowed := false
 				for _, chat := range chats {
-					if chat != c.Sender().ID {
-						i := rand.Intn(len(replies) - 1)
-						err := c.Reply(replies[i])
-						if err != nil {
-							log.Printf("error replying: %s", err)
-						}
-						return err
+					if chat == c.Sender().ID {
+						allowed = true
+						break
 					}
 				}
 
-				return nil
+				if !allowed {
+					i := rand.Intn(len(replies) - 1)
+					if err := c.Reply(replies[i]); err != nil {
+						log.Printf("error replying: %s", err)
+						return err
+					}
+					return nil
+				}
+
+				return next(c)
 			}
 		}
 	}
+	adminOnly.Use(middleware.Logger(log.Default()))
 	adminOnly.Use(fm(cfg.AllowedIDs...))
-	adminOnly.Use(middleware.Whitelist(cfg.AllowedIDs...))
 
 	adminOnly.Handle("/open", r.openValve)
 	adminOnly.Handle("/close", r.closeValve)
