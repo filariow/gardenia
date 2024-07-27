@@ -36,10 +36,10 @@ stringData:
   prometheus-additional.yaml: |
     - job_name: "flowmeter"
       static_configs:
-      - targets: ["192.168.178.197:12113"]
+      - targets: ["192.168.1.21:12113"]
     - job_name: "valved"
       static_configs:
-      - targets: ["192.168.178.197:2112"]
+      - targets: ["192.168.1.21:2112"]
 kind: Secret
 metadata:
   creationTimestamp: null

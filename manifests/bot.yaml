@@ -32,6 +32,6 @@ spec:
         - name: "PROMETHEUS_ADDRESS"
           value: "http://prometheus-operated.rosina.svc.cluster.local:9090"
         - name: "VALVED_ADDRESS"
-          value: "192.168.178.197:12001"
+          value: "192.168.1.21:12001"
         - name: "ROSINA_ADDRESS"
-          value: "192.168.178.197:12000"
+          value: "192.168.1.21:12000"
