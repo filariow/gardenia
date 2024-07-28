@@ -21,7 +21,43 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-const dpi = 96
+const (
+	dpi                  = 96
+	plotDefaultStartTime = 30 * time.Minute
+	plotDefaultEndTime   = 0 * time.Second
+)
+
+type plotInterval struct {
+	start time.Duration
+	end   time.Duration
+}
+
+func parsePlotArgs(args []string) (*plotInterval, error) {
+	switch len(args) {
+	case 0:
+		return &plotInterval{
+			start: plotDefaultStartTime,
+			end:   plotDefaultEndTime,
+		}, nil
+
+	case 1:
+		s, err := time.ParseDuration(args[0])
+		if err != nil {
+			return nil, fmt.Errorf("error parsing start time: %w", err)
+		}
+		return &plotInterval{start: s, end: plotDefaultEndTime}, nil
+	default:
+		s, err := time.ParseDuration(args[1])
+		if err != nil {
+			return nil, fmt.Errorf("error parsing start time: %v", err)
+		}
+		e, err := time.ParseDuration(args[0])
+		if err != nil {
+			return nil, fmt.Errorf("error parsing end time: %v", err)
+		}
+		return &plotInterval{start: s, end: e}, nil
+	}
+}
 
 func (r *rosinaBot) plot(c tele.Context) error {
 	cfg := promapi.Config{Address: r.config.PrometheusAddress}
@@ -30,17 +66,13 @@ func (r *rosinaBot) plot(c tele.Context) error {
 		return c.Send(fmt.Sprintf("Error creating the prometheus client: %v", err))
 	}
 
-	s, err := time.ParseDuration(c.Args()[1])
+  pi, err := parsePlotArgs(c.Args())
 	if err != nil {
-		return c.Send(fmt.Sprintf("error parsing start time: %v", err))
-	}
-	e, err := time.ParseDuration(c.Args()[0])
-	if err != nil {
-		return c.Send(fmt.Sprintf("error parsing end time: %v", err))
+		return c.Send(err.Error())
 	}
 
 	a := prometheusv1.NewAPI(pc)
-	st, et := time.Now().UTC().Add(-s), time.Now().UTC().Add(-e)
+	st, et := time.Now().UTC().Add(-pi.start), time.Now().UTC().Add(-pi.end)
 	scale := int(math.Ceil(float64(et.Second()-st.Second()) / 15))
 	if scale == 0 {
 		scale = 1
