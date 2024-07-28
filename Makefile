@@ -63,7 +63,7 @@ valved-rsync: valved
 
 .PHONY: rosina
 rosina:
-	GOOS=$(GOOS) GOARCH=$(GOARCH) $(GO) build -trimpath -ldflags="-s -w" -o bin/rosina cmd/rosina/main.go
+	env GOOS=$(GOOS) GOARCH=$(GOARCH) GOARM=6 $(GO) build -trimpath -ldflags="-s -w" -o bin/rosina cmd/rosina/main.go
 
 .PHONY: rosina-rsync
 rosina-rsync: rosina
