@@ -1,7 +1,7 @@
 FROM gcr.io/distroless/base-debian11 as final
 ENTRYPOINT ["/rosinacli"]
 
-FROM golang:1.21 as builder
+FROM docker.io/golang:1.21 as builder
 WORKDIR /app
 COPY "go.mod" "go.mod"
 COPY "go.sum" "go.sum"

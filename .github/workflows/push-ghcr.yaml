@@ -1,0 +1,55 @@
+name: Create and publish a Docker image
+
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: ['main']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - component: bot
+          - component: skeduler
+          - component: rosinacli
+
+    steps:
+      - name: 'Log in to the Container registry'
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set Version and Manifests
+        run: |
+          echo "COMMIT_ID=$(git rev-parse --short $GITHUB_SHA)" >> $GITHUB_ENV
+
+      - name: 'Build and Push Images with tag COMMIT_ID'
+        uses: ./.github/actions/push-ghcr
+        with:
+          registry: ${{ env.REGISTRY }}
+          component: ${{ matrix.component }}
+          image_basename: ${{ github.repository }}/
+          image_tag: ${{ env.COMMIT_ID }}

@@ -1,0 +1,31 @@
+name: 'Create and publish Docker images'
+description: 'Creates a publishes the Docker image for a Gardenia''s component'
+inputs:
+  registry:
+    description: 'The Docker registry to use'
+    required: false
+    default: ghcr.io
+  image_tag:
+    description: 'The Docker image tag'
+    required: true
+  image_basename:
+    description: 'The Docker image basename'
+    required: true
+  component:
+    description: 'The component to build'
+    required: true
+  image_builder_build_args:
+    description: 'Arguments to pass to the image builder build command'
+    required: false
+  
+runs:
+  using: "composite"
+  steps:
+    - name: 'Build image'
+      shell: sh
+      run: make ${{ inputs.component }}-image
+      env:
+        IMG_BASE: ${{ inputs.registry }}/${{ inputs.image_basename }}
+        IMG_TAG: ${{ inputs.image_tag }}
+        IMG_BUILD_ARGS: --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" ${{ inputs.image_builder_build_args }} --push --platform linux/arm64
+        IMAGE_BUILDER: docker buildx

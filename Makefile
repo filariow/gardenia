@@ -5,6 +5,8 @@ GOOS := linux
 TARGET_RPI ?= rpi4
 GOLANG_CI ?= golangci-lint
 
+IMAGE_BUILDER ?= docker
+
 .PHONY: trybuild build protos
 
 vet:
@@ -67,13 +69,9 @@ rosina:
 rosina-rsync: rosina
 	rsync ./bin/rosina root@$(TARGET_RPI):/usr/local/bin/rosina
 
-.PHONY: bot-image
-bot-image:
-	docker build --platform linux/arm64 -t rosina/bot:latest -f deploy/docker/bot/Dockerfile .
-
 .PHONY: bot-rsync
 bot-rsync: bot-image
-	docker save rosina/bot:latest -o ./bin/bot-image.tar
+	${IMAGE_BUILDER} save rosina/bot:latest -o ./bin/bot-image.tar
 	rsync ./bin/bot-image.tar root@rpi4:/tmp/bot-latest.tar
 
 .PHONY: bot-deploy
@@ -82,6 +80,25 @@ bot-deploy: bot-rsync
 	kubectl apply -f 'manifests/bot.yaml'
 	kubectl delete pods -l app=rosinabot -n rosina
 
+## Lint
 .PHONY: lint
 lint:
 	$(GOLANG_CI) run ./...
+
+## Images
+IMG_BASE ?= rosina/
+IMG_TAG ?= latest
+IMG_BUILD_ARGS ?= 
+
+.PHONY: bot-image
+bot-image:
+	${IMAGE_BUILDER} build ${IMG_BUILD_ARGS} -t ${IMG_BASE}bot:${IMG_TAG} -f deploy/docker/bot/Dockerfile .
+
+.PHONY: skeduler-image
+skeduler-image:
+	${IMAGE_BUILDER} build ${IMG_BUILD_ARGS} -t ${IMG_BASE}skeduler:${IMG_TAG} -f deploy/docker/skeduler/Dockerfile .
+
+.PHONY: rosinacli-image
+rosinacli-image:
+	${IMAGE_BUILDER} build ${IMG_BUILD_ARGS} -t ${IMG_BASE}rosinacli:${IMG_TAG} -f deploy/docker/rosinacli/Dockerfile .
+
