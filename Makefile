@@ -3,6 +3,7 @@ GOARCH := arm
 GOOS := linux
 
 TARGET_RPI ?= rpi4
+GOLANG_CI ?= golangci-lint
 
 .PHONY: trybuild build protos
 
@@ -80,3 +81,7 @@ bot-deploy: bot-rsync
 	ssh root@rpi4 '/usr/local/bin/k3s ctr images import /tmp/bot-latest.tar'
 	kubectl apply -f 'manifests/bot.yaml'
 	kubectl delete pods -l app=rosinabot -n rosina
+
+.PHONY: lint
+lint:
+	$(GOLANG_CI) run ./...
