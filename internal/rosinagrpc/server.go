@@ -9,12 +9,16 @@ import (
 )
 
 func New() *RosinaGrpcServer {
-	return &RosinaGrpcServer{jobs: make(chan Job)}
+	return &RosinaGrpcServer{
+		aborts: make(chan struct{}),
+		jobs:   make(chan Job),
+	}
 }
 
 type RosinaGrpcServer struct {
 	valvedprotos.UnimplementedRosinaSvcServer
-	jobs chan Job
+	jobs   chan Job
+	aborts chan struct{}
 }
 
 type Job struct {
@@ -32,8 +36,12 @@ func (s *RosinaGrpcServer) OpenValve(ctx context.Context, req *valvedprotos.Open
 
 // Close the valve
 func (s *RosinaGrpcServer) CloseValve(ctx context.Context, req *valvedprotos.CloseRequest) (*valvedprotos.CloseReply, error) {
-	s.jobs <- Job{Duration: 0}
+	s.aborts <- struct{}{}
 	return &valvedprotos.CloseReply{}, nil
+}
+
+func (s *RosinaGrpcServer) Aborts() <-chan struct{} {
+	return s.aborts
 }
 
 func (s *RosinaGrpcServer) Jobs() <-chan Job {

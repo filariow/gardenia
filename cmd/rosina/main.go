@@ -57,7 +57,7 @@ func run() error {
 		return err
 	}
 
-	go rosina.Skedule(context.Background(), cli, rs.Jobs())
+	go rosina.Skedule(context.Background(), cli, rs.Jobs(), rs.Aborts())
 
 	return s.Serve(lis)
 }

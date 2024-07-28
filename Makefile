@@ -39,7 +39,7 @@ protos:
 
 .PHONY: install-edge
 install-edge:
-	TARGET_RPI=rpi3 GOARM=5 make flowmeter-rsync valved-rsync rosina-rsync
+	TARGET_RPI=rpi-valve GOARM=5 make flowmeter-rsync valved-rsync rosina-rsync
 
 .PHONY: flowmeter
 flowmeter:
@@ -47,11 +47,11 @@ flowmeter:
 
 .PHONY: flowmeter-rsync
 flowmeter-rsync: flowmeter
-	rsync ./bin/flowmeter root@rpi3:/usr/local/bin/flowmeter
+	rsync ./bin/flowmeter root@rpi-valve:/usr/local/bin/flowmeter
 
 .PHONY: flowmeter-install
 flowmeter-install: flowmeter-rsync
-	ssh root@rpi3 systemctl restart flowmeter
+	ssh root@rpi-valve systemctl restart flowmeter
 
 .PHONY: valved
 valved:
@@ -67,7 +67,7 @@ rosina:
 
 .PHONY: rosina-rsync
 rosina-rsync: rosina
-	rsync ./bin/rosina root@$(TARGET_RPI):/usr/local/bin/rosina
+	rsync ./bin/rosina root@rpi-valve:/usr/local/bin/rosina
 
 .PHONY: bot-rsync
 bot-rsync: bot-image
