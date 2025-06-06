@@ -1,7 +1,7 @@
 FROM gcr.io/distroless/base-debian11 as final
 ENTRYPOINT ["/skeduler"]
 
-FROM docker.io/golang:1.21 as builder
+FROM golang:1.23 AS builder
 WORKDIR /app
 COPY "go.mod" "go.mod"
 COPY "go.sum" "go.sum"
