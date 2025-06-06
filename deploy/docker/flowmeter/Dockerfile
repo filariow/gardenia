@@ -1,7 +1,7 @@
 FROM gcr.io/distroless/base-debian11 as final
 ENTRYPOINT ["/flowmeter"]
 
-FROM golang:1.23 AS builder
+FROM golang:1.24.4 AS builder
 WORKDIR /app
 COPY "go.mod" "go.mod"
 COPY "go.sum" "go.sum"
