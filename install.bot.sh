@@ -15,4 +15,4 @@ echo "Importing bot image into k3s"
 sudo k3s ctr images import /tmp/bot-latest.tar
 
 echo "Appling manifests"
-kubectl apply -f "manifests/bot.yaml"
+kubectl apply -f "manifests/bot/bot.yaml"

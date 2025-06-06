@@ -27,4 +27,4 @@ echo "Importing rosina image into k3s"
 sudo k3s ctr images import /tmp/rosinacli-latest.tar
 
 echo "Appling manifests"
-kubectl apply -f "manifests/skeduler.yaml"
+kubectl apply -f "manifests/skeduler/skeduler.yaml"
